@@ -160,7 +160,36 @@ function Index() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date"><CalendarDays size={14} className="mr-1 inline" />Date</Label>
-              <Input id="date" type="date" value={data.date} onChange={update("date")} />
+              <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="date"
+                    type="button"
+                    variant="outline"
+                    className={cn("w-full justify-start text-left font-normal", !selectedDate && "text-muted-foreground")}
+                  >
+                    <CalendarDays size={16} />
+                    {selectedDate ? format(selectedDate, "PP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <div className="flex gap-2 border-b p-3">
+                    <Button type="button" size="sm" variant="secondary" className="flex-1" onClick={() => setDate(today)}>
+                      Today
+                    </Button>
+                    <Button type="button" size="sm" variant="secondary" className="flex-1" onClick={() => setDate(tomorrow)}>
+                      Tomorrow
+                    </Button>
+                  </div>
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setDate}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-2">
               <Label htmlFor="time"><Clock size={14} className="mr-1 inline" />Time</Label>
