@@ -26,9 +26,11 @@ export const Route = createFileRoute("/")({
 function Index() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [exporting, setExporting] = useState(false);
   const [layout, setLayout] = useState<LayoutStyle>("bold");
   const [image, setImage] = useState<string | null>(null);
+  const [video, setVideo] = useState<string | null>(null);
   const [data, setData] = useState<EventData>({
     name: "Summer Rooftop Party",
     date: "",
@@ -49,18 +51,55 @@ function Index() {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const isVideo = file.type.startsWith("video");
     const reader = new FileReader();
-    reader.onload = () => setImage(reader.result as string);
+    reader.onload = () => {
+      const url = reader.result as string;
+      if (isVideo) {
+        setVideo(url);
+        setImage(null);
+      } else {
+        setImage(url);
+        setVideo(null);
+      }
+    };
     reader.readAsDataURL(file);
+  };
+
+  const clearMedia = () => {
+    setImage(null);
+    setVideo(null);
   };
 
   const handleExport = async () => {
     if (!canvasRef.current) return;
     setExporting(true);
     try {
+      // Video frames can't be captured by html-to-image, so snapshot the
+      // current frame to a still image and render that during export.
+      let restore: string | null = null;
+      if (video && videoRef.current) {
+        const v = videoRef.current;
+        const c = document.createElement("canvas");
+        c.width = 1080;
+        c.height = 1920;
+        const ctx = c.getContext("2d");
+        if (ctx) {
+          const vw = v.videoWidth || 1080;
+          const vh = v.videoHeight || 1920;
+          const scale = Math.max(1080 / vw, 1920 / vh);
+          const dw = vw * scale;
+          const dh = vh * scale;
+          ctx.drawImage(v, (1080 - dw) / 2, (1920 - dh) / 2, dw, dh);
+          restore = video;
+          setImage(c.toDataURL("image/jpeg", 0.92));
+          setVideo(null);
+          await new Promise((r) => setTimeout(r, 100));
+        }
+      }
       const dataUrl = await toPng(canvasRef.current, {
         width: 1080,
         height: 1920,
@@ -71,6 +110,10 @@ function Index() {
       link.download = `${(data.name || "event").replace(/\s+/g, "-").toLowerCase()}-story.png`;
       link.href = dataUrl;
       link.click();
+      if (restore) {
+        setVideo(restore);
+        setImage(null);
+      }
     } finally {
       setExporting(false);
     }
