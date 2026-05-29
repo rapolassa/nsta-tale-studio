@@ -152,7 +152,7 @@ function Index() {
                 transformOrigin: "top left",
               }}
             >
-              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} />
+              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} />
             </div>
           </div>
         </div>
