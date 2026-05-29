@@ -193,7 +193,9 @@ function Index() {
                 </Button>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">A dark shade is applied so text stays readable.</p>
+            <p className="text-xs text-muted-foreground">
+              A dark shade is applied so text stays readable. Video plays in the preview; the export saves the current frame as a PNG.
+            </p>
           </div>
 
           <div className="space-y-2">
