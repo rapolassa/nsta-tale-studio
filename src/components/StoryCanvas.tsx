@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useRef, useImperativeHandle } from "react";
 import bg from "@/assets/story-bg.jpg";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
 
@@ -36,6 +36,10 @@ interface StoryCanvasProps {
   layout?: LayoutStyle;
   /** Custom uploaded background image (data URL). Falls back to default bg. */
   image?: string | null;
+  /** Custom uploaded background video (data URL). Takes priority over image. */
+  video?: string | null;
+  /** Ref to the underlying <video> element so the parent can capture a frame. */
+  videoRef?: React.Ref<HTMLVideoElement>;
 }
 
 /**
@@ -43,20 +47,36 @@ interface StoryCanvasProps {
  * transform so export captures crisp full-size pixels.
  */
 export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
-  ({ data, layout = "bold", image }, ref) => {
+  ({ data, layout = "bold", image, video, videoRef }, ref) => {
+    const innerVideoRef = useRef<HTMLVideoElement>(null);
+    useImperativeHandle(videoRef, () => innerVideoRef.current as HTMLVideoElement);
     return (
       <div
         ref={ref}
         className="relative overflow-hidden"
         style={{ width: 1080, height: 1920 }}
       >
-        <img
-          src={image || bg}
-          alt=""
-          width={1080}
-          height={1920}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+        {video ? (
+          <video
+            ref={innerVideoRef}
+            src={video}
+            autoPlay
+            loop
+            muted
+            playsInline
+            width={1080}
+            height={1920}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <img
+            src={image || bg}
+            alt=""
+            width={1080}
+            height={1920}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
         {/* Dark shade so text stays legible on any uploaded image */}
         <div className="absolute inset-0 bg-black/45" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/80" />
