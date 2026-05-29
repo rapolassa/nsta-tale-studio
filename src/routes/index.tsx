@@ -39,6 +39,16 @@ function Index() {
   const update = (key: keyof EventData) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setData((d) => ({ ...d, [key]: e.target.value }));
 
+  const [dateOpen, setDateOpen] = useState(false);
+  const selectedDate = data.date ? new Date(data.date + "T00:00:00") : undefined;
+  const setDate = (d: Date | undefined) => {
+    setData((prev) => ({ ...prev, date: d ? format(d, "yyyy-MM-dd") : "" }));
+    setDateOpen(false);
+  };
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
   const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
