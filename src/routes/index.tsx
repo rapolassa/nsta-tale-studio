@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toPng } from "html-to-image";
-import { CalendarDays, Clock, MapPin, Download, Sparkles } from "lucide-react";
-import { StoryCanvas, type EventData } from "@/components/StoryCanvas";
+import { CalendarDays, Clock, MapPin, Download, Sparkles, ImageUp, X } from "lucide-react";
+import { StoryCanvas, type EventData, type LayoutStyle } from "@/components/StoryCanvas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,10 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [exporting, setExporting] = useState(false);
+  const [layout, setLayout] = useState<LayoutStyle>("bold");
+  const [image, setImage] = useState<string | null>(null);
   const [data, setData] = useState<EventData>({
     name: "Summer Rooftop Party",
     date: "",
@@ -31,6 +34,14 @@ function Index() {
 
   const update = (key: keyof EventData) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setData((d) => ({ ...d, [key]: e.target.value }));
+
+  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setImage(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const handleExport = async () => {
     if (!canvasRef.current) return;
@@ -50,6 +61,12 @@ function Index() {
       setExporting(false);
     }
   };
+
+  const layoutOptions: { id: LayoutStyle; label: string }[] = [
+    { id: "bold", label: "Bold" },
+    { id: "editorial", label: "Editorial" },
+    { id: "minimal", label: "Minimal" },
+  ];
 
   return (
     <main className="min-h-screen px-6 py-10 md:px-12">
@@ -78,13 +95,50 @@ function Index() {
                 transformOrigin: "top left",
               }}
             >
-              <StoryCanvas ref={canvasRef} data={data} />
+              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} />
             </div>
           </div>
         </div>
 
         {/* Form */}
         <div className="space-y-6 rounded-2xl border border-border bg-card p-6">
+          <div className="space-y-2">
+            <Label>Layout style</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {layoutOptions.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setLayout(opt.id)}
+                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                    layout === opt.id
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Background image</Label>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImage} />
+            <div className="flex gap-2">
+              <Button type="button" variant="secondary" className="flex-1" onClick={() => fileRef.current?.click()}>
+                <ImageUp size={18} />
+                {image ? "Replace image" : "Upload image"}
+              </Button>
+              {image && (
+                <Button type="button" variant="outline" size="icon" onClick={() => setImage(null)} aria-label="Remove image">
+                  <X size={18} />
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">A dark shade is applied so text stays readable.</p>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="name">Event name</Label>
             <Input id="name" maxLength={60} value={data.name} onChange={update("name")} placeholder="Summer Rooftop Party" />
