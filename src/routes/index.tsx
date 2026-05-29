@@ -180,15 +180,15 @@ function Index() {
           </div>
 
           <div className="space-y-2">
-            <Label>Background image</Label>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImage} />
+            <Label>Background photo or video</Label>
+            <input ref={fileRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleMedia} />
             <div className="flex gap-2">
               <Button type="button" variant="secondary" className="flex-1" onClick={() => fileRef.current?.click()}>
                 <ImageUp size={18} />
-                {image ? "Replace image" : "Upload image"}
+                {image || video ? "Replace media" : "Upload photo / video"}
               </Button>
-              {image && (
-                <Button type="button" variant="outline" size="icon" onClick={() => setImage(null)} aria-label="Remove image">
+              {(image || video) && (
+                <Button type="button" variant="outline" size="icon" onClick={clearMedia} aria-label="Remove media">
                   <X size={18} />
                 </Button>
               )}
