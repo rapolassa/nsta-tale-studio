@@ -38,7 +38,7 @@ export const StoryCanvas = forwardRef<HTMLDivElement, { data: EventData }>(
     return (
       <div
         ref={ref}
-        className="relative overflow-hidden text-story-foreground"
+        className="relative overflow-hidden"
         style={{ width: 1080, height: 1920 }}
       >
         <img
