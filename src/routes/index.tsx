@@ -1,11 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toPng } from "html-to-image";
+import { format } from "date-fns";
 import { CalendarDays, Clock, MapPin, Download, Sparkles, ImageUp, X } from "lucide-react";
 import { StoryCanvas, type EventData, type LayoutStyle } from "@/components/StoryCanvas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
