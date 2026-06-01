@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { format } from "date-fns";
-import { CalendarDays, Clock, MapPin, Download, Sparkles, ImageUp, X } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Download, Sparkles, ImageUp, X, Bookmark, Trash2 } from "lucide-react";
 import { StoryCanvas, type EventData, type LayoutStyle } from "@/components/StoryCanvas";
+import { useSavedEvents } from "@/lib/saved-events";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,7 @@ function Index() {
     time: "",
     location: "",
   });
+  const { events: savedEvents, save: saveEvent, remove: removeEvent } = useSavedEvents();
 
   const update = (key: keyof EventData) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setData((d) => ({ ...d, [key]: e.target.value }));
@@ -239,6 +241,60 @@ function Index() {
 
         {/* Form */}
         <div className="space-y-6 rounded-2xl border border-border bg-card p-6">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>Saved events</Label>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={() => saveEvent(data, layout)}
+                disabled={!data.name.trim()}
+              >
+                <Bookmark size={14} />
+                Save current
+              </Button>
+            </div>
+            {savedEvents.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                Save an event to quickly prefill its details later.
+              </p>
+            ) : (
+              <div className="flex max-h-40 flex-col gap-2 overflow-y-auto">
+                {savedEvents.map((ev) => (
+                  <div
+                    key={ev.id}
+                    className="flex items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-2"
+                  >
+                    <button
+                      type="button"
+                      className="min-w-0 flex-1 text-left"
+                      onClick={() => {
+                        setData(ev.data);
+                        setLayout(ev.layout);
+                      }}
+                    >
+                      <p className="truncate text-sm font-medium">{ev.data.name || "Untitled event"}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {[ev.data.date, ev.data.time, ev.data.location].filter(Boolean).join(" · ") || "No details"}
+                      </p>
+                    </button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 shrink-0"
+                      onClick={() => removeEvent(ev.id)}
+                      aria-label="Delete saved event"
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label>Layout style</Label>
             <div className="grid grid-cols-3 gap-2">
