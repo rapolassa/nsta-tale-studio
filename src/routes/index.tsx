@@ -274,7 +274,7 @@ function Index() {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              A dark shade is applied so text stays readable. Video plays in the preview; the export saves the current frame as a PNG.
+              A dark shade is applied so text stays readable. Photos export as PNG; videos can export as a WebM clip.
             </p>
           </div>
 
@@ -335,11 +335,19 @@ function Index() {
             <Input id="location" maxLength={80} value={data.location} onChange={update("location")} placeholder="123 Skyline Ave, NYC" />
           </div>
 
-          <Button onClick={handleExport} disabled={exporting} className="w-full" size="lg">
+          <Button onClick={handleExport} disabled={exporting} className="w-full" size="lg" variant={video ? "outline" : "default"}>
             <Download size={18} />
             {exporting ? "Exporting…" : "Export story image"}
           </Button>
-          <p className="text-center text-xs text-muted-foreground">Exports a 1080 × 1920 PNG, ready to post.</p>
+          {video && (
+            <Button onClick={handleExportVideo} disabled={exporting} className="w-full" size="lg">
+              <Download size={18} />
+              {exporting ? "Exporting…" : "Export story video"}
+            </Button>
+          )}
+          <p className="text-center text-xs text-muted-foreground">
+            {video ? "Exports a 1080 × 1920 WebM clip (one loop), ready to post." : "Exports a 1080 × 1920 PNG, ready to post."}
+          </p>
         </div>
       </div>
     </main>
