@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -31,6 +32,7 @@ function Index() {
   const [layout, setLayout] = useState<LayoutStyle>("bold");
   const [image, setImage] = useState<string | null>(null);
   const [video, setVideo] = useState<string | null>(null);
+  const [shade, setShade] = useState(45);
   const [data, setData] = useState<EventData>({
     name: "Summer Rooftop Party",
     date: "",
@@ -54,7 +56,8 @@ function Index() {
   const handleMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const isVideo = file.type.startsWith("video");
+    const isVideo =
+      file.type.startsWith("video") || /\.(mov|mp4|webm|m4v)$/i.test(file.name);
     const reader = new FileReader();
     reader.onload = () => {
       const url = reader.result as string;
@@ -123,6 +126,9 @@ function Index() {
     { id: "bold", label: "Bold" },
     { id: "editorial", label: "Editorial" },
     { id: "minimal", label: "Minimal" },
+    { id: "ticket", label: "Ticket" },
+    { id: "poster", label: "Poster" },
+    { id: "festival", label: "Festival" },
   ];
 
   return (
@@ -152,7 +158,7 @@ function Index() {
                 transformOrigin: "top left",
               }}
             >
-              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} />
+              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} shade={shade / 100} />
             </div>
           </div>
         </div>
@@ -181,7 +187,7 @@ function Index() {
 
           <div className="space-y-2">
             <Label>Background photo or video</Label>
-            <input ref={fileRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleMedia} />
+            <input ref={fileRef} type="file" accept="image/*,video/*,.mov,.mp4,.webm,.m4v,video/quicktime" className="hidden" onChange={handleMedia} />
             <div className="flex gap-2">
               <Button type="button" variant="secondary" className="flex-1" onClick={() => fileRef.current?.click()}>
                 <ImageUp size={18} />
@@ -196,6 +202,15 @@ function Index() {
             <p className="text-xs text-muted-foreground">
               A dark shade is applied so text stays readable. Video plays in the preview; the export saves the current frame as a PNG.
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>Shade intensity</Label>
+              <span className="text-xs text-muted-foreground">{shade}%</span>
+            </div>
+            <Slider value={[shade]} onValueChange={(v) => setShade(v[0])} min={0} max={90} step={5} />
+            <p className="text-xs text-muted-foreground">Darken the background so text stays readable.</p>
           </div>
 
           <div className="space-y-2">

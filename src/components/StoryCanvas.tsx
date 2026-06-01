@@ -9,7 +9,13 @@ export interface EventData {
   location: string;
 }
 
-export type LayoutStyle = "bold" | "editorial" | "minimal";
+export type LayoutStyle =
+  | "bold"
+  | "editorial"
+  | "minimal"
+  | "ticket"
+  | "poster"
+  | "festival";
 
 function formatDate(date: string) {
   if (!date) return "";
@@ -40,6 +46,8 @@ interface StoryCanvasProps {
   video?: string | null;
   /** Ref to the underlying <video> element so the parent can capture a frame. */
   videoRef?: React.Ref<HTMLVideoElement>;
+  /** Darkness of the overlay shade, 0 (none) – 1 (black). Defaults to 0.45. */
+  shade?: number;
 }
 
 /**
@@ -47,7 +55,7 @@ interface StoryCanvasProps {
  * transform so export captures crisp full-size pixels.
  */
 export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
-  ({ data, layout = "bold", image, video, videoRef }, ref) => {
+  ({ data, layout = "bold", image, video, videoRef, shade = 0.45 }, ref) => {
     const innerVideoRef = useRef<HTMLVideoElement>(null);
     useImperativeHandle(videoRef, () => innerVideoRef.current as HTMLVideoElement);
     return (
@@ -78,12 +86,15 @@ export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
           />
         )}
         {/* Dark shade so text stays legible on any uploaded image */}
-        <div className="absolute inset-0 bg-black/45" />
+        <div className="absolute inset-0 bg-black" style={{ opacity: shade }} />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/80" />
 
         {layout === "bold" && <BoldLayout data={data} />}
         {layout === "editorial" && <EditorialLayout data={data} />}
         {layout === "minimal" && <MinimalLayout data={data} />}
+        {layout === "ticket" && <TicketLayout data={data} />}
+        {layout === "poster" && <PosterLayout data={data} />}
+        {layout === "festival" && <FestivalLayout data={data} />}
       </div>
     );
   }
@@ -177,6 +188,66 @@ function MinimalLayout({ data }: { data: EventData }) {
         <p className="text-4xl font-light uppercase tracking-wide text-white/80">
           {data.location || "Add location"}
         </p>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Layout 4: TICKET (boxed card, stub-style details) -------- */
+function TicketLayout({ data }: { data: EventData }) {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center p-20">
+      <div className="w-full rounded-[2.5rem] border-2 border-white/30 bg-white/10 p-16 text-center text-white backdrop-blur-md">
+        <span className="text-3xl font-bold uppercase tracking-[0.5em] text-accent">
+          Admit One
+        </span>
+        <h1 className="my-12 text-[110px] font-extrabold uppercase leading-[0.9] tracking-tight drop-shadow-lg">
+          {data.name || "Event Name"}
+        </h1>
+        <div className="space-y-7 border-t-2 border-dashed border-white/30 pt-12">
+          <LabelRow label="Date" value={formatDate(data.date) || "Pick a date"} />
+          <LabelRow label="Time" value={formatTime(data.time) || "Pick a time"} />
+          <LabelRow label="Location" value={data.location || "Add location"} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Layout 5: POSTER (huge centered title, top + bottom) ----- */
+function PosterLayout({ data }: { data: EventData }) {
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-16 p-20 text-center text-white">
+      <p className="text-4xl font-bold uppercase tracking-[0.4em] text-white/85">
+        {formatDate(data.date) || "Pick a date"}
+      </p>
+      <h1 className="text-[170px] font-black uppercase leading-[0.85] tracking-tighter drop-shadow-2xl">
+        {data.name || "Event Name"}
+      </h1>
+      <div className="space-y-3">
+        <p className="text-5xl font-semibold">{formatTime(data.time) || "Pick a time"}</p>
+        <p className="text-4xl font-light uppercase tracking-wide text-white/85">
+          {data.location || "Add location"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Layout 6: FESTIVAL (lineup-style stacked, left aligned) -- */
+function FestivalLayout({ data }: { data: EventData }) {
+  return (
+    <div className="absolute inset-0 flex flex-col justify-center gap-10 p-24 text-white">
+      <div className="h-2 w-40 rounded-full bg-accent" />
+      <h1 className="text-[130px] font-black uppercase leading-[0.85] tracking-tighter drop-shadow-lg">
+        {data.name || "Event Name"}
+      </h1>
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-4 text-4xl font-bold uppercase tracking-wide">
+        <span>{formatDate(data.date) || "Pick a date"}</span>
+        <span className="text-accent">/</span>
+        <span>{formatTime(data.time) || "Pick a time"}</span>
+        <span className="text-accent">/</span>
+        <span className="text-white/85">{data.location || "Add location"}</span>
       </div>
     </div>
   );
