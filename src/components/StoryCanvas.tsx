@@ -9,7 +9,13 @@ export interface EventData {
   location: string;
 }
 
-export type LayoutStyle = "bold" | "editorial" | "minimal";
+export type LayoutStyle =
+  | "bold"
+  | "editorial"
+  | "minimal"
+  | "ticket"
+  | "poster"
+  | "festival";
 
 function formatDate(date: string) {
   if (!date) return "";
@@ -40,6 +46,8 @@ interface StoryCanvasProps {
   video?: string | null;
   /** Ref to the underlying <video> element so the parent can capture a frame. */
   videoRef?: React.Ref<HTMLVideoElement>;
+  /** Darkness of the overlay shade, 0 (none) – 1 (black). Defaults to 0.45. */
+  shade?: number;
 }
 
 /**
@@ -47,7 +55,7 @@ interface StoryCanvasProps {
  * transform so export captures crisp full-size pixels.
  */
 export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
-  ({ data, layout = "bold", image, video, videoRef }, ref) => {
+  ({ data, layout = "bold", image, video, videoRef, shade = 0.45 }, ref) => {
     const innerVideoRef = useRef<HTMLVideoElement>(null);
     useImperativeHandle(videoRef, () => innerVideoRef.current as HTMLVideoElement);
     return (
@@ -78,12 +86,15 @@ export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
           />
         )}
         {/* Dark shade so text stays legible on any uploaded image */}
-        <div className="absolute inset-0 bg-black/45" />
+        <div className="absolute inset-0 bg-black" style={{ opacity: shade }} />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/80" />
 
         {layout === "bold" && <BoldLayout data={data} />}
         {layout === "editorial" && <EditorialLayout data={data} />}
         {layout === "minimal" && <MinimalLayout data={data} />}
+        {layout === "ticket" && <TicketLayout data={data} />}
+        {layout === "poster" && <PosterLayout data={data} />}
+        {layout === "festival" && <FestivalLayout data={data} />}
       </div>
     );
   }
