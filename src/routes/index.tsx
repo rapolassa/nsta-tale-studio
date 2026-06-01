@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { format } from "date-fns";
-import { CalendarDays, Clock, MapPin, Download, Sparkles, ImageUp, X } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Download, Sparkles, ImageUp, X, Bookmark, Trash2 } from "lucide-react";
 import { StoryCanvas, type EventData, type LayoutStyle } from "@/components/StoryCanvas";
+import { useSavedEvents } from "@/lib/saved-events";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,7 @@ function Index() {
     time: "",
     location: "",
   });
+  const { events: savedEvents, save: saveEvent, remove: removeEvent } = useSavedEvents();
 
   const update = (key: keyof EventData) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setData((d) => ({ ...d, [key]: e.target.value }));
