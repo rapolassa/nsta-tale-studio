@@ -58,21 +58,25 @@ function Index() {
     if (!file) return;
     const isVideo =
       file.type.startsWith("video") || /\.(mov|mp4|webm|m4v)$/i.test(file.name);
-    const reader = new FileReader();
-    reader.onload = () => {
-      const url = reader.result as string;
-      if (isVideo) {
-        setVideo(url);
-        setImage(null);
-      } else {
-        setImage(url);
+    if (isVideo) {
+      // Object URLs play far more reliably than huge data URLs (esp. .mov/.mp4).
+      if (video) URL.revokeObjectURL(video);
+      setVideo(URL.createObjectURL(file));
+      setImage(null);
+    } else {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImage(reader.result as string);
+        if (video) URL.revokeObjectURL(video);
         setVideo(null);
-      }
-    };
-    reader.readAsDataURL(file);
+      };
+      reader.readAsDataURL(file);
+    }
+    e.target.value = "";
   };
 
   const clearMedia = () => {
+    if (video) URL.revokeObjectURL(video);
     setImage(null);
     setVideo(null);
   };
@@ -117,6 +121,76 @@ function Index() {
         setVideo(restore);
         setImage(null);
       }
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // Export a real video story: composite the live video frame with the text
+  // overlay onto a canvas and capture it with MediaRecorder.
+  const handleExportVideo = async () => {
+    if (!canvasRef.current || !videoRef.current || !video) return;
+    setExporting(true);
+    try {
+      const v = videoRef.current;
+      // Rasterize the overlay (shade + text) once, excluding the video element.
+      const overlayUrl = await toPng(canvasRef.current, {
+        width: 1080,
+        height: 1920,
+        pixelRatio: 1,
+        cacheBust: true,
+        filter: (node) => node !== v,
+      });
+      const overlay = new Image();
+      overlay.src = overlayUrl;
+      await overlay.decode();
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 1920;
+      const ctx = canvas.getContext("2d")!;
+
+      const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+        ? "video/webm;codecs=vp9"
+        : "video/webm";
+      const stream = canvas.captureStream(30);
+      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
+      const chunks: BlobPart[] = [];
+      recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+
+      let raf = 0;
+      const draw = () => {
+        const vw = v.videoWidth || 1080;
+        const vh = v.videoHeight || 1920;
+        const scale = Math.max(1080 / vw, 1920 / vh);
+        const dw = vw * scale;
+        const dh = vh * scale;
+        ctx.drawImage(v, (1080 - dw) / 2, (1920 - dh) / 2, dw, dh);
+        ctx.drawImage(overlay, 0, 0, 1080, 1920);
+        raf = requestAnimationFrame(draw);
+      };
+
+      // Record one full loop of the video (capped at 15s).
+      const duration = Math.min(v.duration && isFinite(v.duration) ? v.duration : 10, 15);
+      v.currentTime = 0;
+      await v.play();
+      draw();
+      recorder.start();
+
+      await new Promise((r) => setTimeout(r, duration * 1000));
+
+      cancelAnimationFrame(raf);
+      await new Promise<void>((resolve) => {
+        recorder.onstop = () => resolve();
+        recorder.stop();
+      });
+
+      const blob = new Blob(chunks, { type: "video/webm" });
+      const link = document.createElement("a");
+      link.download = `${(data.name || "event").replace(/\s+/g, "-").toLowerCase()}-story.webm`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     } finally {
       setExporting(false);
     }
