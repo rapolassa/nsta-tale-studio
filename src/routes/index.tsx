@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { toPng } from "html-to-image";
+import { toPng, toJpeg } from "html-to-image";
 import { format } from "date-fns";
-import { CalendarDays, Clock, MapPin, Download, Sparkles, ImageUp, X, Bookmark, Trash2 } from "lucide-react";
-import { StoryCanvas, type EventData, type LayoutStyle } from "@/components/StoryCanvas";
+import { CalendarDays, Clock, MapPin, Route as RouteIcon, Download, Sparkles, ImageUp, X, Bookmark, Trash2, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd } from "lucide-react";
+import { StoryCanvas, type EventData, type LayoutStyle, type VAlign, LAYOUTS_WITH_ALIGN, DEFAULT_ALIGN } from "@/components/StoryCanvas";
 import { useSavedEvents } from "@/lib/saved-events";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,13 @@ function Index() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [exporting, setExporting] = useState(false);
   const [layout, setLayout] = useState<LayoutStyle>("bold");
+  const [align, setAlign] = useState<VAlign>("middle");
+  const supportsAlign = LAYOUTS_WITH_ALIGN.includes(layout);
+
+  const chooseLayout = (id: LayoutStyle) => {
+    setLayout(id);
+    setAlign(DEFAULT_ALIGN[id] ?? "middle");
+  };
   const [image, setImage] = useState<string | null>(null);
   const [video, setVideo] = useState<string | null>(null);
   const [shade, setShade] = useState(45);
@@ -39,6 +46,7 @@ function Index() {
     date: "",
     time: "",
     location: "",
+    distance: "",
   });
   const { events: savedEvents, save: saveEvent, remove: removeEvent } = useSavedEvents();
 
@@ -109,14 +117,19 @@ function Index() {
           await new Promise((r) => setTimeout(r, 100));
         }
       }
-      const dataUrl = await toPng(canvasRef.current, {
+      // Instagram Story spec: 1080x1920 @ 9:16. We render at 2x (2160x3840)
+      // for crisp text/edges, then save as high-quality JPEG (smaller files
+      // than PNG, stays well under Instagram's 4 MB image upload limit).
+      const dataUrl = await toJpeg(canvasRef.current, {
         width: 1080,
         height: 1920,
-        pixelRatio: 1,
+        pixelRatio: 2,
+        quality: 0.95,
         cacheBust: true,
+        backgroundColor: "#000000",
       });
       const link = document.createElement("a");
-      link.download = `${(data.name || "event").replace(/\s+/g, "-").toLowerCase()}-story.png`;
+      link.download = `${(data.name || "event").replace(/\s+/g, "-").toLowerCase()}-story.jpg`;
       link.href = dataUrl;
       link.click();
       if (restore) {
@@ -136,10 +149,12 @@ function Index() {
     try {
       const v = videoRef.current;
       // Rasterize the overlay (shade + text) once, excluding the video element.
+      // Render at 2x so when it composites onto the 1080x1920 record canvas,
+      // text/edges stay crisp after downsampling.
       const overlayUrl = await toPng(canvasRef.current, {
         width: 1080,
         height: 1920,
-        pixelRatio: 1,
+        pixelRatio: 2,
         cacheBust: true,
         filter: (node) => node !== v,
       });
@@ -152,11 +167,21 @@ function Index() {
       canvas.height = 1920;
       const ctx = canvas.getContext("2d")!;
 
-      const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-        ? "video/webm;codecs=vp9"
-        : "video/webm";
+      // Prefer MP4/H.264 — Instagram Stories only accept MP4 (H.264) videos.
+      // Fall back to WebM where MP4 recording isn't supported (Chromium on
+      // desktop currently records WebM only; you can convert later if needed).
+      const candidates = [
+        "video/mp4;codecs=avc1.640028",
+        "video/mp4;codecs=avc1",
+        "video/mp4",
+        "video/webm;codecs=vp9",
+        "video/webm;codecs=vp8",
+        "video/webm",
+      ];
+      const mimeType =
+        candidates.find((t) => MediaRecorder.isTypeSupported(t)) ?? "video/webm";
       const stream = canvas.captureStream(30);
-      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
+      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 12_000_000 });
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
 
@@ -187,9 +212,10 @@ function Index() {
         recorder.stop();
       });
 
-      const blob = new Blob(chunks, { type: "video/webm" });
+      const blob = new Blob(chunks, { type: mimeType });
+      const ext = mimeType.startsWith("video/mp4") ? "mp4" : "webm";
       const link = document.createElement("a");
-      link.download = `${(data.name || "event").replace(/\s+/g, "-").toLowerCase()}-story.webm`;
+      link.download = `${(data.name || "event").replace(/\s+/g, "-").toLowerCase()}-story.${ext}`;
       link.href = URL.createObjectURL(blob);
       link.click();
       setTimeout(() => URL.revokeObjectURL(link.href), 1000);
@@ -205,6 +231,20 @@ function Index() {
     { id: "ticket", label: "Ticket" },
     { id: "poster", label: "Poster" },
     { id: "festival", label: "Festival" },
+    { id: "neon", label: "Neon" },
+    { id: "magazine", label: "Magazine" },
+    { id: "polaroid", label: "Polaroid" },
+    { id: "retro", label: "Retro" },
+    { id: "marquee", label: "Marquee" },
+    { id: "crest", label: "Crest" },
+    { id: "varsity", label: "Varsity" },
+    { id: "stadium", label: "Stadium" },
+    { id: "heritage", label: "Heritage" },
+    { id: "racebib", label: "Race Bib" },
+    { id: "crew", label: "Crew" },
+    { id: "statement", label: "Statement" },
+    { id: "splash", label: "Splash" },
+    { id: "programme", label: "Programme" },
   ];
 
   return (
@@ -234,7 +274,7 @@ function Index() {
                 transformOrigin: "top left",
               }}
             >
-              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} shade={shade / 100} />
+              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} shade={shade / 100} align={align} />
             </div>
           </div>
         </div>
@@ -270,13 +310,14 @@ function Index() {
                       type="button"
                       className="min-w-0 flex-1 text-left"
                       onClick={() => {
-                        setData(ev.data);
+                        setData({ ...ev.data, distance: ev.data.distance ?? "" });
                         setLayout(ev.layout);
+                        setAlign(DEFAULT_ALIGN[ev.layout] ?? "middle");
                       }}
                     >
                       <p className="truncate text-sm font-medium">{ev.data.name || "Untitled event"}</p>
                       <p className="truncate text-xs text-muted-foreground">
-                        {[ev.data.date, ev.data.time, ev.data.location].filter(Boolean).join(" · ") || "No details"}
+                        {[ev.data.date, ev.data.time, ev.data.location, ev.data.distance].filter(Boolean).join(" · ") || "No details"}
                       </p>
                     </button>
                     <Button
@@ -302,7 +343,7 @@ function Index() {
                 <button
                   key={opt.id}
                   type="button"
-                  onClick={() => setLayout(opt.id)}
+                  onClick={() => chooseLayout(opt.id)}
                   className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                     layout === opt.id
                       ? "border-primary bg-primary text-primary-foreground"
@@ -314,6 +355,35 @@ function Index() {
               ))}
             </div>
           </div>
+
+          {supportsAlign && (
+            <div className="space-y-2">
+              <Label>Vertical position</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    { id: "top", label: "Top", Icon: AlignVerticalJustifyStart },
+                    { id: "middle", label: "Middle", Icon: AlignVerticalJustifyCenter },
+                    { id: "bottom", label: "Bottom", Icon: AlignVerticalJustifyEnd },
+                  ] as const
+                ).map(({ id, label, Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setAlign(id)}
+                    className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                      align === id
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
+                    }`}
+                  >
+                    <Icon size={16} />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label>Background photo or video</Label>
@@ -390,6 +460,10 @@ function Index() {
             <Label htmlFor="location"><MapPin size={14} className="mr-1 inline" />Location</Label>
             <Input id="location" maxLength={80} value={data.location} onChange={update("location")} placeholder="123 Skyline Ave, NYC" />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="distance"><RouteIcon size={14} className="mr-1 inline" />Distance <span className="text-xs font-normal text-muted-foreground">(optional)</span></Label>
+            <Input id="distance" maxLength={40} value={data.distance} onChange={update("distance")} placeholder="5K · 10 mi · 42.2 km" />
+          </div>
 
           <Button onClick={handleExport} disabled={exporting} className="w-full" size="lg" variant={video ? "outline" : "default"}>
             <Download size={18} />
@@ -402,7 +476,9 @@ function Index() {
             </Button>
           )}
           <p className="text-center text-xs text-muted-foreground">
-            {video ? "Exports a 1080 × 1920 WebM clip (one loop), ready to post." : "Exports a 1080 × 1920 PNG, ready to post."}
+            {video
+              ? "Exports a 1080 × 1920 video (MP4 when supported, else WebM) — drop it straight into an Instagram Story."
+              : "Exports a high-quality 1080 × 1920 JPEG (2× super-sampled) — Instagram Story spec, ready to post."}
           </p>
         </div>
       </div>
