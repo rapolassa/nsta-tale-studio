@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from "react";
 import { toPng, toJpeg } from "html-to-image";
 import { format } from "date-fns";
 import { CalendarDays, Clock, MapPin, Route as RouteIcon, Download, Sparkles, ImageUp, X, Bookmark, Trash2, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, LogIn, LogOut } from "lucide-react";
-import { StoryCanvas, type EventData, type LayoutStyle, type VAlign, LAYOUTS_WITH_ALIGN, DEFAULT_ALIGN } from "@/components/StoryCanvas";
+import { StoryCanvas, type EventData, type LayoutStyle, type VAlign, type StoryFormat, LAYOUTS_WITH_ALIGN, DEFAULT_ALIGN, FORMAT_DIMENSIONS } from "@/components/StoryCanvas";
 import { useSavedEvents } from "@/lib/saved-events";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -35,8 +35,16 @@ function Index() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [exporting, setExporting] = useState(false);
   const [layout, setLayout] = useState<LayoutStyle>("bold");
+  const [storyFormat, setStoryFormat] = useState<StoryFormat>("story");
   const [align, setAlign] = useState<VAlign>("middle");
   const supportsAlign = LAYOUTS_WITH_ALIGN.includes(layout);
+  const { width: outW, height: outH } = FORMAT_DIMENSIONS[storyFormat];
+  const previewScale = 0.3;
+  const formatOptions: { id: StoryFormat; label: string; ratio: string }[] = [
+    { id: "story", label: "Story", ratio: "9:16" },
+    { id: "reel", label: "Reel", ratio: "9:16" },
+    { id: "post", label: "Post", ratio: "4:5" },
+  ];
 
   const chooseLayout = (id: LayoutStyle) => {
     setLayout(id);
@@ -126,17 +134,17 @@ function Index() {
       if (video && videoRef.current) {
         const v = videoRef.current;
         const c = document.createElement("canvas");
-        c.width = 1080;
-        c.height = 1920;
+        c.width = outW;
+        c.height = outH;
         const ctx = c.getContext("2d");
         if (ctx) {
-          const vw = v.videoWidth || 1080;
-          const vh = v.videoHeight || 1920;
-          const scale = Math.max(1080 / vw, 1920 / vh);
+          const vw = v.videoWidth || outW;
+          const vh = v.videoHeight || outH;
+          const scale = Math.max(outW / vw, outH / vh);
           const dw = vw * scale;
           const dh = vh * scale;
           if (bw) ctx.filter = "grayscale(100%)";
-          ctx.drawImage(v, (1080 - dw) / 2, (1920 - dh) / 2, dw, dh);
+          ctx.drawImage(v, (outW - dw) / 2, (outH - dh) / 2, dw, dh);
           ctx.filter = "none";
           restore = video;
           setImage(c.toDataURL("image/jpeg", 0.92));
@@ -144,12 +152,10 @@ function Index() {
           await new Promise((r) => setTimeout(r, 100));
         }
       }
-      // Instagram Story spec: 1080x1920 @ 9:16. We render at 2x (2160x3840)
-      // for crisp text/edges, then save as high-quality JPEG (smaller files
-      // than PNG, stays well under Instagram's 4 MB image upload limit).
+      // Rendered at 2x for crisp text/edges, then saved as high-quality JPEG.
       const dataUrl = await toJpeg(canvasRef.current, {
-        width: 1080,
-        height: 1920,
+        width: outW,
+        height: outH,
         pixelRatio: 2,
         quality: 0.95,
         cacheBust: true,
@@ -179,8 +185,8 @@ function Index() {
       // Render at 2x so when it composites onto the 1080x1920 record canvas,
       // text/edges stay crisp after downsampling.
       const overlayUrl = await toPng(canvasRef.current, {
-        width: 1080,
-        height: 1920,
+        width: outW,
+        height: outH,
         pixelRatio: 2,
         cacheBust: true,
         filter: (node) => node !== v,
@@ -190,8 +196,8 @@ function Index() {
       await overlay.decode();
 
       const canvas = document.createElement("canvas");
-      canvas.width = 1080;
-      canvas.height = 1920;
+      canvas.width = outW;
+      canvas.height = outH;
       const ctx = canvas.getContext("2d")!;
 
       // Prefer MP4/H.264 — Instagram Stories only accept MP4 (H.264) videos.
@@ -214,18 +220,18 @@ function Index() {
 
       let raf = 0;
       const draw = () => {
-        const vw = v.videoWidth || 1080;
-        const vh = v.videoHeight || 1920;
-        const scale = Math.max(1080 / vw, 1920 / vh);
+        const vw = v.videoWidth || outW;
+        const vh = v.videoHeight || outH;
+        const scale = Math.max(outW / vw, outH / vh);
         const dw = vw * scale;
         const dh = vh * scale;
         // Grayscale only the video frame; the overlay (text + accents) stays
         // colorful, so we save/restore the canvas filter around the video draw.
         ctx.save();
         if (bw) ctx.filter = "grayscale(100%)";
-        ctx.drawImage(v, (1080 - dw) / 2, (1920 - dh) / 2, dw, dh);
+        ctx.drawImage(v, (outW - dw) / 2, (outH - dh) / 2, dw, dh);
         ctx.restore();
-        ctx.drawImage(overlay, 0, 0, 1080, 1920);
+        ctx.drawImage(overlay, 0, 0, outW, outH);
         raf = requestAnimationFrame(draw);
       };
 
@@ -309,20 +315,41 @@ function Index() {
 
       <div className="mx-auto grid max-w-6xl items-start gap-12 lg:grid-cols-[1fr_400px]">
         {/* Preview */}
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-4">
+          {/* Format selector — lives right above the output preview */}
+          <div className="w-full max-w-[324px] space-y-2">
+            <Label>Format</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {formatOptions.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setStoryFormat(opt.id)}
+                  className={`flex flex-col items-center rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                    storyFormat === opt.id
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
+                  }`}
+                >
+                  {opt.label}
+                  <span className="text-xs font-normal opacity-70">{opt.ratio}</span>
+                </button>
+              ))}
+            </div>
+          </div>
           <div
             className="relative overflow-hidden rounded-[2rem] border border-border"
-            style={{ width: 324, height: 576, boxShadow: "var(--shadow-glow)" }}
+            style={{ width: outW * previewScale, height: outH * previewScale, boxShadow: "var(--shadow-glow)" }}
           >
             <div
               style={{
-                width: 1080,
-                height: 1920,
-                transform: "scale(0.3)",
+                width: outW,
+                height: outH,
+                transform: `scale(${previewScale})`,
                 transformOrigin: "top left",
               }}
             >
-              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} shade={shade / 100} align={align} bw={bw} />
+              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} shade={shade / 100} align={align} bw={bw} format={storyFormat} />
             </div>
           </div>
         </div>
