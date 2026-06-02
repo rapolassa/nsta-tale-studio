@@ -134,17 +134,17 @@ function Index() {
       if (video && videoRef.current) {
         const v = videoRef.current;
         const c = document.createElement("canvas");
-        c.width = 1080;
-        c.height = 1920;
+        c.width = outW;
+        c.height = outH;
         const ctx = c.getContext("2d");
         if (ctx) {
-          const vw = v.videoWidth || 1080;
-          const vh = v.videoHeight || 1920;
-          const scale = Math.max(1080 / vw, 1920 / vh);
+          const vw = v.videoWidth || outW;
+          const vh = v.videoHeight || outH;
+          const scale = Math.max(outW / vw, outH / vh);
           const dw = vw * scale;
           const dh = vh * scale;
           if (bw) ctx.filter = "grayscale(100%)";
-          ctx.drawImage(v, (1080 - dw) / 2, (1920 - dh) / 2, dw, dh);
+          ctx.drawImage(v, (outW - dw) / 2, (outH - dh) / 2, dw, dh);
           ctx.filter = "none";
           restore = video;
           setImage(c.toDataURL("image/jpeg", 0.92));
@@ -152,12 +152,10 @@ function Index() {
           await new Promise((r) => setTimeout(r, 100));
         }
       }
-      // Instagram Story spec: 1080x1920 @ 9:16. We render at 2x (2160x3840)
-      // for crisp text/edges, then save as high-quality JPEG (smaller files
-      // than PNG, stays well under Instagram's 4 MB image upload limit).
+      // Rendered at 2x for crisp text/edges, then saved as high-quality JPEG.
       const dataUrl = await toJpeg(canvasRef.current, {
-        width: 1080,
-        height: 1920,
+        width: outW,
+        height: outH,
         pixelRatio: 2,
         quality: 0.95,
         cacheBust: true,
