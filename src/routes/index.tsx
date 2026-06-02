@@ -289,6 +289,22 @@ function Index() {
           <h1 className="text-xl font-bold leading-tight">Story Maker</h1>
           <p className="text-sm text-muted-foreground">Design an Instagram event story</p>
         </div>
+        <div className="ml-auto flex items-center gap-3">
+          {user ? (
+            <>
+              <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>
+              <Button type="button" variant="outline" size="sm" onClick={signOut}>
+                <LogOut size={14} />
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <Button type="button" variant="outline" size="sm" onClick={signIn}>
+              <LogIn size={14} />
+              Sign in with Google
+            </Button>
+          )}
+        </div>
       </header>
 
       <div className="mx-auto grid max-w-6xl items-start gap-12 lg:grid-cols-[1fr_400px]">
