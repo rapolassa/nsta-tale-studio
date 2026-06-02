@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from "react";
 import { toPng, toJpeg } from "html-to-image";
 import { format } from "date-fns";
 import { CalendarDays, Clock, MapPin, Route as RouteIcon, Download, Sparkles, ImageUp, X, Bookmark, Trash2, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, LogIn, LogOut } from "lucide-react";
-import { StoryCanvas, type EventData, type LayoutStyle, type VAlign, LAYOUTS_WITH_ALIGN, DEFAULT_ALIGN } from "@/components/StoryCanvas";
+import { StoryCanvas, type EventData, type LayoutStyle, type VAlign, type StoryFormat, LAYOUTS_WITH_ALIGN, DEFAULT_ALIGN, FORMAT_DIMENSIONS } from "@/components/StoryCanvas";
 import { useSavedEvents } from "@/lib/saved-events";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -35,8 +35,16 @@ function Index() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [exporting, setExporting] = useState(false);
   const [layout, setLayout] = useState<LayoutStyle>("bold");
+  const [storyFormat, setStoryFormat] = useState<StoryFormat>("story");
   const [align, setAlign] = useState<VAlign>("middle");
   const supportsAlign = LAYOUTS_WITH_ALIGN.includes(layout);
+  const { width: outW, height: outH } = FORMAT_DIMENSIONS[storyFormat];
+  const previewScale = 0.3;
+  const formatOptions: { id: StoryFormat; label: string; ratio: string }[] = [
+    { id: "story", label: "Story", ratio: "9:16" },
+    { id: "reel", label: "Reel", ratio: "9:16" },
+    { id: "post", label: "Post", ratio: "4:5" },
+  ];
 
   const chooseLayout = (id: LayoutStyle) => {
     setLayout(id);
