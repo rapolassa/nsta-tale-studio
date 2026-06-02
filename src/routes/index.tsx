@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -41,6 +42,7 @@ function Index() {
   const [image, setImage] = useState<string | null>(null);
   const [video, setVideo] = useState<string | null>(null);
   const [shade, setShade] = useState(45);
+  const [bw, setBw] = useState(false);
   const [data, setData] = useState<EventData>({
     name: "Summer Rooftop Party",
     date: "",
@@ -110,7 +112,9 @@ function Index() {
           const scale = Math.max(1080 / vw, 1920 / vh);
           const dw = vw * scale;
           const dh = vh * scale;
+          if (bw) ctx.filter = "grayscale(100%)";
           ctx.drawImage(v, (1080 - dw) / 2, (1920 - dh) / 2, dw, dh);
+          ctx.filter = "none";
           restore = video;
           setImage(c.toDataURL("image/jpeg", 0.92));
           setVideo(null);
@@ -192,7 +196,12 @@ function Index() {
         const scale = Math.max(1080 / vw, 1920 / vh);
         const dw = vw * scale;
         const dh = vh * scale;
+        // Grayscale only the video frame; the overlay (text + accents) stays
+        // colorful, so we save/restore the canvas filter around the video draw.
+        ctx.save();
+        if (bw) ctx.filter = "grayscale(100%)";
         ctx.drawImage(v, (1080 - dw) / 2, (1920 - dh) / 2, dw, dh);
+        ctx.restore();
         ctx.drawImage(overlay, 0, 0, 1080, 1920);
         raf = requestAnimationFrame(draw);
       };
@@ -274,7 +283,7 @@ function Index() {
                 transformOrigin: "top left",
               }}
             >
-              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} shade={shade / 100} align={align} />
+              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} shade={shade / 100} align={align} bw={bw} />
             </div>
           </div>
         </div>
@@ -411,6 +420,14 @@ function Index() {
             </div>
             <Slider value={[shade]} onValueChange={(v) => setShade(v[0])} min={0} max={90} step={5} />
             <p className="text-xs text-muted-foreground">Darken the background so text stays readable.</p>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-secondary px-4 py-3">
+            <div className="space-y-0.5">
+              <Label htmlFor="bw" className="cursor-pointer">Black &amp; white</Label>
+              <p className="text-xs text-muted-foreground">Desaturate the background image or video.</p>
+            </div>
+            <Switch id="bw" checked={bw} onCheckedChange={setBw} />
           </div>
 
           <div className="space-y-2">

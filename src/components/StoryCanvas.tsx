@@ -96,6 +96,8 @@ interface StoryCanvasProps {
   shade?: number;
   /** Vertical alignment for layouts that support it. */
   align?: VAlign;
+  /** Render the uploaded photo/video as black & white. */
+  bw?: boolean;
 }
 
 /**
@@ -103,10 +105,11 @@ interface StoryCanvasProps {
  * transform so export captures crisp full-size pixels.
  */
 export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
-  ({ data, layout = "bold", image, video, videoRef, shade = 0.45, align }, ref) => {
+  ({ data, layout = "bold", image, video, videoRef, shade = 0.45, align, bw = false }, ref) => {
     const effectiveAlign: VAlign = align ?? DEFAULT_ALIGN[layout] ?? "middle";
     const innerVideoRef = useRef<HTMLVideoElement>(null);
     useImperativeHandle(videoRef, () => innerVideoRef.current as HTMLVideoElement);
+    const bgFilter = bw ? "grayscale(100%)" : undefined;
     return (
       <div
         ref={ref}
@@ -124,6 +127,7 @@ export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
             width={1080}
             height={1920}
             className="absolute inset-0 h-full w-full object-cover"
+            style={{ filter: bgFilter }}
           />
         ) : (
           <img
@@ -132,6 +136,7 @@ export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
             width={1080}
             height={1920}
             className="absolute inset-0 h-full w-full object-cover"
+            style={{ filter: bgFilter }}
           />
         )}
         {/* Dark shade so text stays legible on any uploaded image */}
