@@ -41,8 +41,7 @@ function Index() {
   const { width: outW, height: outH } = FORMAT_DIMENSIONS[storyFormat];
   const previewScale = 0.3;
   const formatOptions: { id: StoryFormat; label: string; ratio: string }[] = [
-    { id: "story", label: "Story", ratio: "9:16" },
-    { id: "reel", label: "Reel", ratio: "9:16" },
+    { id: "story", label: "Story / Reel", ratio: "9:16" },
     { id: "post", label: "Post", ratio: "4:5" },
   ];
 
@@ -319,7 +318,7 @@ function Index() {
           {/* Format selector — lives right above the output preview */}
           <div className="w-full max-w-[324px] space-y-2">
             <Label>Format</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {formatOptions.map((opt) => (
                 <button
                   key={opt.id}

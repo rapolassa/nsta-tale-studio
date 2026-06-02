@@ -34,12 +34,11 @@ export type LayoutStyle =
 
 export type VAlign = "top" | "middle" | "bottom";
 
-export type StoryFormat = "story" | "reel" | "post";
+export type StoryFormat = "story" | "post";
 
 /** Pixel dimensions for each output format. */
 export const FORMAT_DIMENSIONS: Record<StoryFormat, { width: number; height: number; label: string; ratio: string }> = {
-  story: { width: 1080, height: 1920, label: "Story", ratio: "9:16" },
-  reel: { width: 1080, height: 1920, label: "Reel", ratio: "9:16" },
+  story: { width: 1080, height: 1920, label: "Story / Reel", ratio: "9:16" },
   post: { width: 1080, height: 1350, label: "Post", ratio: "4:5" },
 };
 
