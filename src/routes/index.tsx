@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { toPng, toJpeg } from "html-to-image";
 import { format } from "date-fns";
-import { CalendarDays, Clock, MapPin, Route as RouteIcon, Download, Sparkles, ImageUp, X, Bookmark, Trash2, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Route as RouteIcon, Download, Sparkles, ImageUp, X, Bookmark, Trash2, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, LogIn, LogOut } from "lucide-react";
 import { StoryCanvas, type EventData, type LayoutStyle, type VAlign, LAYOUTS_WITH_ALIGN, DEFAULT_ALIGN } from "@/components/StoryCanvas";
 import { useSavedEvents } from "@/lib/saved-events";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,6 +54,26 @@ function Index() {
     distance: "",
   });
   const { events: savedEvents, save: saveEvent, remove: removeEvent } = useSavedEvents();
+
+  const [user, setUser] = useState<{ email?: string } | null>(null);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const signIn = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) toast.error("Could not sign in. Please try again.");
+  };
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+  };
 
   const update = (key: keyof EventData) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setData((d) => ({ ...d, [key]: e.target.value }));
@@ -265,6 +288,22 @@ function Index() {
         <div>
           <h1 className="text-xl font-bold leading-tight">Story Maker</h1>
           <p className="text-sm text-muted-foreground">Design an Instagram event story</p>
+        </div>
+        <div className="ml-auto flex items-center gap-3">
+          {user ? (
+            <>
+              <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>
+              <Button type="button" variant="outline" size="sm" onClick={signOut}>
+                <LogOut size={14} />
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <Button type="button" variant="outline" size="sm" onClick={signIn}>
+              <LogIn size={14} />
+              Sign in with Google
+            </Button>
+          )}
         </div>
       </header>
 
