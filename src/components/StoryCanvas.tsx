@@ -34,6 +34,15 @@ export type LayoutStyle =
 
 export type VAlign = "top" | "middle" | "bottom";
 
+export type StoryFormat = "story" | "reel" | "post";
+
+/** Pixel dimensions for each output format. */
+export const FORMAT_DIMENSIONS: Record<StoryFormat, { width: number; height: number; label: string; ratio: string }> = {
+  story: { width: 1080, height: 1920, label: "Story", ratio: "9:16" },
+  reel: { width: 1080, height: 1920, label: "Reel", ratio: "9:16" },
+  post: { width: 1080, height: 1350, label: "Post", ratio: "4:5" },
+};
+
 /** Layouts whose content block can be shifted vertically. */
 export const LAYOUTS_WITH_ALIGN: readonly LayoutStyle[] = [
   "festival",
@@ -98,6 +107,8 @@ interface StoryCanvasProps {
   align?: VAlign;
   /** Render the uploaded photo/video as black & white. */
   bw?: boolean;
+  /** Output format controlling aspect ratio / dimensions. */
+  format?: StoryFormat;
 }
 
 /**
@@ -105,8 +116,9 @@ interface StoryCanvasProps {
  * transform so export captures crisp full-size pixels.
  */
 export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
-  ({ data, layout = "bold", image, video, videoRef, shade = 0.45, align, bw = false }, ref) => {
+  ({ data, layout = "bold", image, video, videoRef, shade = 0.45, align, bw = false, format = "story" }, ref) => {
     const effectiveAlign: VAlign = align ?? DEFAULT_ALIGN[layout] ?? "middle";
+    const { width: cw, height: ch } = FORMAT_DIMENSIONS[format];
     const innerVideoRef = useRef<HTMLVideoElement>(null);
     useImperativeHandle(videoRef, () => innerVideoRef.current as HTMLVideoElement);
     const bgFilter = bw ? "grayscale(100%)" : undefined;
@@ -114,7 +126,7 @@ export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
       <div
         ref={ref}
         className="relative overflow-hidden"
-        style={{ width: 1080, height: 1920 }}
+        style={{ width: cw, height: ch }}
       >
         {video ? (
           <video
@@ -124,8 +136,8 @@ export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
             loop
             muted
             playsInline
-            width={1080}
-            height={1920}
+            width={cw}
+            height={ch}
             className="absolute inset-0 h-full w-full object-cover"
             style={{ filter: bgFilter }}
           />
@@ -133,8 +145,8 @@ export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
           <img
             src={image || bg}
             alt=""
-            width={1080}
-            height={1920}
+            width={cw}
+            height={ch}
             className="absolute inset-0 h-full w-full object-cover"
             style={{ filter: bgFilter }}
           />
