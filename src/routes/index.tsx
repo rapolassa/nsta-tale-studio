@@ -185,8 +185,8 @@ function Index() {
       // Render at 2x so when it composites onto the 1080x1920 record canvas,
       // text/edges stay crisp after downsampling.
       const overlayUrl = await toPng(canvasRef.current, {
-        width: 1080,
-        height: 1920,
+        width: outW,
+        height: outH,
         pixelRatio: 2,
         cacheBust: true,
         filter: (node) => node !== v,
@@ -196,8 +196,8 @@ function Index() {
       await overlay.decode();
 
       const canvas = document.createElement("canvas");
-      canvas.width = 1080;
-      canvas.height = 1920;
+      canvas.width = outW;
+      canvas.height = outH;
       const ctx = canvas.getContext("2d")!;
 
       // Prefer MP4/H.264 — Instagram Stories only accept MP4 (H.264) videos.
@@ -220,18 +220,18 @@ function Index() {
 
       let raf = 0;
       const draw = () => {
-        const vw = v.videoWidth || 1080;
-        const vh = v.videoHeight || 1920;
-        const scale = Math.max(1080 / vw, 1920 / vh);
+        const vw = v.videoWidth || outW;
+        const vh = v.videoHeight || outH;
+        const scale = Math.max(outW / vw, outH / vh);
         const dw = vw * scale;
         const dh = vh * scale;
         // Grayscale only the video frame; the overlay (text + accents) stays
         // colorful, so we save/restore the canvas filter around the video draw.
         ctx.save();
         if (bw) ctx.filter = "grayscale(100%)";
-        ctx.drawImage(v, (1080 - dw) / 2, (1920 - dh) / 2, dw, dh);
+        ctx.drawImage(v, (outW - dw) / 2, (outH - dh) / 2, dw, dh);
         ctx.restore();
-        ctx.drawImage(overlay, 0, 0, 1080, 1920);
+        ctx.drawImage(overlay, 0, 0, outW, outH);
         raf = requestAnimationFrame(draw);
       };
 
