@@ -315,20 +315,41 @@ function Index() {
 
       <div className="mx-auto grid max-w-6xl items-start gap-12 lg:grid-cols-[1fr_400px]">
         {/* Preview */}
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-4">
+          {/* Format selector — lives right above the output preview */}
+          <div className="w-full max-w-[324px] space-y-2">
+            <Label>Format</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {formatOptions.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setStoryFormat(opt.id)}
+                  className={`flex flex-col items-center rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                    storyFormat === opt.id
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
+                  }`}
+                >
+                  {opt.label}
+                  <span className="text-xs font-normal opacity-70">{opt.ratio}</span>
+                </button>
+              ))}
+            </div>
+          </div>
           <div
             className="relative overflow-hidden rounded-[2rem] border border-border"
-            style={{ width: 324, height: 576, boxShadow: "var(--shadow-glow)" }}
+            style={{ width: outW * previewScale, height: outH * previewScale, boxShadow: "var(--shadow-glow)" }}
           >
             <div
               style={{
-                width: 1080,
-                height: 1920,
-                transform: "scale(0.3)",
+                width: outW,
+                height: outH,
+                transform: `scale(${previewScale})`,
                 transformOrigin: "top left",
               }}
             >
-              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} shade={shade / 100} align={align} bw={bw} />
+              <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} shade={shade / 100} align={align} bw={bw} format={storyFormat} />
             </div>
           </div>
         </div>
