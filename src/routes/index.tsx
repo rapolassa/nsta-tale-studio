@@ -353,61 +353,84 @@ function Index() {
           </div>
         </div>
 
-        {/* Form */}
-        <div className="space-y-6 rounded-2xl border border-border bg-card p-6">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Saved events</Label>
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={() => saveEvent(data, layout)}
-                disabled={!data.name.trim()}
-              >
-                <Bookmark size={14} />
-                Save current
-              </Button>
-            </div>
-            {savedEvents.length === 0 ? (
-              <p className="text-xs text-muted-foreground">
-                Save an event to quickly prefill its details later.
-              </p>
-            ) : (
-              <div className="flex max-h-40 flex-col gap-2 overflow-y-auto">
-                {savedEvents.map((ev) => (
-                  <div
-                    key={ev.id}
-                    className="flex items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-2"
+        {/* Right column: saved events box + settings form */}
+        <div className="space-y-6">
+        {/* Saved events — kept in its own box, separate from the settings */}
+        <div className="space-y-2 rounded-2xl border border-border bg-card p-6">
+          <div className="flex items-center justify-between">
+            <Label>Saved events</Label>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={() => saveEvent(data, layout)}
+              disabled={!data.name.trim()}
+            >
+              <Bookmark size={14} />
+              Save current
+            </Button>
+          </div>
+          {savedEvents.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              Save an event to quickly prefill its details later.
+            </p>
+          ) : (
+            <div className="flex max-h-40 flex-col gap-2 overflow-y-auto">
+              {savedEvents.map((ev) => (
+                <div
+                  key={ev.id}
+                  className="flex items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-2"
+                >
+                  <button
+                    type="button"
+                    className="min-w-0 flex-1 text-left"
+                    onClick={() => {
+                      setData({ ...ev.data, distance: ev.data.distance ?? "" });
+                      setLayout(ev.layout);
+                      setAlign(DEFAULT_ALIGN[ev.layout] ?? "middle");
+                    }}
                   >
-                    <button
-                      type="button"
-                      className="min-w-0 flex-1 text-left"
-                      onClick={() => {
-                        setData({ ...ev.data, distance: ev.data.distance ?? "" });
-                        setLayout(ev.layout);
-                        setAlign(DEFAULT_ALIGN[ev.layout] ?? "middle");
-                      }}
-                    >
-                      <p className="truncate text-sm font-medium">{ev.data.name || "Untitled event"}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {[ev.data.date, ev.data.time, ev.data.location, ev.data.distance].filter(Boolean).join(" · ") || "No details"}
-                      </p>
-                    </button>
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 shrink-0"
-                      onClick={() => removeEvent(ev.id)}
-                      aria-label="Delete saved event"
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
+                    <p className="truncate text-sm font-medium">{ev.data.name || "Untitled event"}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {[ev.data.date, ev.data.time, ev.data.location, ev.data.distance].filter(Boolean).join(" · ") || "No details"}
+                    </p>
+                  </button>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 shrink-0"
+                    onClick={() => removeEvent(ev.id)}
+                    aria-label="Delete saved event"
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Settings form */}
+        <div className="space-y-6 rounded-2xl border border-border bg-card p-6">
+          {/* Background media — first thing in the settings */}
+          <div className="space-y-2">
+            <Label>Background photo or video</Label>
+            <input ref={fileRef} type="file" accept="image/*,video/*,.mov,.mp4,.webm,.m4v,video/quicktime" className="hidden" onChange={handleMedia} />
+            <div className="flex gap-2">
+              <Button type="button" variant="secondary" className="flex-1" onClick={() => fileRef.current?.click()}>
+                <ImageUp size={18} />
+                {image || video ? "Replace media" : "Upload photo / video"}
+              </Button>
+              {(image || video) && (
+                <Button type="button" variant="outline" size="icon" onClick={clearMedia} aria-label="Remove media">
+                  <X size={18} />
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              A dark shade is applied so text stays readable. Photos export as PNG; videos can export as a WebM clip.
+            </p>
           </div>
 
           <div className="space-y-2">
