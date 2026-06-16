@@ -448,7 +448,7 @@ function Index() {
         </div>
 
         {/* Settings form */}
-        <div className="space-y-6 rounded-2xl border border-border bg-card p-6">
+        <div className="space-y-5 rounded-2xl border-border bg-card p-0 md:space-y-6 md:border md:p-6">
           {/* Background media — first thing in the settings */}
           <div className="space-y-2">
             <Label>Background photo or video</Label>
