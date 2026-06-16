@@ -304,8 +304,8 @@ function Index() {
   ];
 
   return (
-    <main className="min-h-screen px-6 py-10 md:px-12">
-      <header className="mx-auto mb-10 flex max-w-6xl items-center gap-3">
+    <main className="min-h-screen px-4 py-6 md:px-12 md:py-10">
+      <header className="mx-auto mb-6 flex max-w-6xl items-center gap-3 md:mb-10">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <Sparkles size={20} />
         </span>
@@ -331,7 +331,7 @@ function Index() {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-6xl items-start gap-12 lg:grid-cols-[1fr_400px]">
+      <div className="mx-auto grid max-w-6xl items-start gap-5 lg:grid-cols-[1fr_400px] lg:gap-12">
         {/* Preview */}
         <div className="sticky top-0 z-20 -mx-6 flex flex-col items-center gap-3 border-b border-border bg-background/85 px-6 py-4 backdrop-blur lg:static lg:mx-0 lg:gap-4 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0 lg:backdrop-blur-none">
           {/* Format selector — lives right above the output preview */}
@@ -390,9 +390,9 @@ function Index() {
         </div>
 
         {/* Right column: saved events box + settings form */}
-        <div className="space-y-6">
+        <div className="space-y-5 md:space-y-6">
         {/* Saved events — kept in its own box, separate from the settings */}
-        <div className="space-y-2 rounded-2xl border border-border bg-card p-6">
+        <div className="space-y-2 rounded-2xl border-border p-0 md:border md:bg-card md:p-6">
           <div className="flex items-center justify-between">
             <Label>Saved events</Label>
             <Button
@@ -448,7 +448,7 @@ function Index() {
         </div>
 
         {/* Settings form */}
-        <div className="space-y-6 rounded-2xl border border-border bg-card p-6">
+        <div className="space-y-5 rounded-2xl border-border p-0 md:space-y-6 md:border md:bg-card md:p-6">
           {/* Background media — first thing in the settings */}
           <div className="space-y-2">
             <Label>Background photo or video</Label>
