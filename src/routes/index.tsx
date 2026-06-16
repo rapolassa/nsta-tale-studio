@@ -567,6 +567,7 @@ function Index() {
               : "Exports a high-quality 1080 × 1920 JPEG (2× super-sampled) — Instagram Story spec, ready to post."}
           </p>
         </div>
+        </div>
       </div>
     </main>
   );
