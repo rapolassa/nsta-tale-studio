@@ -150,9 +150,17 @@ export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
             style={{ filter: bgFilter }}
           />
         )}
-        {/* Dark shade so text stays legible on any uploaded image */}
-        <div className="absolute inset-0 bg-black" style={{ opacity: shade }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/80" />
+        {/* Dark shade so text stays legible on any uploaded image.
+            At shade=0 no overlay is rendered at all. */}
+        {shade > 0 && (
+          <>
+            <div className="absolute inset-0 bg-black" style={{ opacity: shade }} />
+            <div
+              className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black"
+              style={{ opacity: shade }}
+            />
+          </>
+        )}
 
         {layout === "bold" && <BoldLayout data={data} />}
         {layout === "editorial" && <EditorialLayout data={data} />}

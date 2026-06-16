@@ -213,37 +213,54 @@ function Index() {
       const mimeType =
         candidates.find((t) => MediaRecorder.isTypeSupported(t)) ?? "video/webm";
       const stream = canvas.captureStream(30);
-      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 12_000_000 });
+      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
 
-      let raf = 0;
-      const draw = () => {
-        const vw = v.videoWidth || outW;
-        const vh = v.videoHeight || outH;
-        const scale = Math.max(outW / vw, outH / vh);
-        const dw = vw * scale;
-        const dh = vh * scale;
-        // Grayscale only the video frame; the overlay (text + accents) stays
-        // colorful, so we save/restore the canvas filter around the video draw.
-        ctx.save();
-        if (bw) ctx.filter = "grayscale(100%)";
-        ctx.drawImage(v, (outW - dw) / 2, (outH - dh) / 2, dw, dh);
-        ctx.restore();
+      // Precompute the cover-fit geometry once (it never changes per frame).
+      const vw = v.videoWidth || outW;
+      const vh = v.videoHeight || outH;
+      const scale = Math.max(outW / vw, outH / vh);
+      const dw = vw * scale;
+      const dh = vh * scale;
+      const dx = (outW - dw) / 2;
+      const dy = (outH - dh) / 2;
+      // Set the grayscale filter once instead of toggling it every frame.
+      ctx.filter = bw ? "grayscale(100%)" : "none";
+
+      const drawFrame = () => {
+        ctx.drawImage(v, dx, dy, dw, dh);
         ctx.drawImage(overlay, 0, 0, outW, outH);
-        raf = requestAnimationFrame(draw);
+      };
+
+      // Prefer requestVideoFrameCallback so canvas draws stay in lock-step with
+      // the actual decoded video frames — this removes the stutter you get when
+      // a plain rAF loop runs out of sync with the video's real frame rate.
+      const hasRVFC = "requestVideoFrameCallback" in v;
+      let raf = 0;
+      let stopped = false;
+      const pump = () => {
+        if (stopped) return;
+        drawFrame();
+        if (hasRVFC) {
+          (v as unknown as { requestVideoFrameCallback: (cb: () => void) => void }).requestVideoFrameCallback(pump);
+        } else {
+          raf = requestAnimationFrame(pump);
+        }
       };
 
       // Record one full loop of the video (capped at 15s).
       const duration = Math.min(v.duration && isFinite(v.duration) ? v.duration : 10, 15);
       v.currentTime = 0;
       await v.play();
-      draw();
+      pump();
       recorder.start();
 
       await new Promise((r) => setTimeout(r, duration * 1000));
 
+      stopped = true;
       cancelAnimationFrame(raf);
+      ctx.filter = "none";
       await new Promise<void>((resolve) => {
         recorder.onstop = () => resolve();
         recorder.stop();
@@ -353,61 +370,84 @@ function Index() {
           </div>
         </div>
 
-        {/* Form */}
-        <div className="space-y-6 rounded-2xl border border-border bg-card p-6">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Saved events</Label>
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={() => saveEvent(data, layout)}
-                disabled={!data.name.trim()}
-              >
-                <Bookmark size={14} />
-                Save current
-              </Button>
-            </div>
-            {savedEvents.length === 0 ? (
-              <p className="text-xs text-muted-foreground">
-                Save an event to quickly prefill its details later.
-              </p>
-            ) : (
-              <div className="flex max-h-40 flex-col gap-2 overflow-y-auto">
-                {savedEvents.map((ev) => (
-                  <div
-                    key={ev.id}
-                    className="flex items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-2"
+        {/* Right column: saved events box + settings form */}
+        <div className="space-y-6">
+        {/* Saved events — kept in its own box, separate from the settings */}
+        <div className="space-y-2 rounded-2xl border border-border bg-card p-6">
+          <div className="flex items-center justify-between">
+            <Label>Saved events</Label>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={() => saveEvent(data, layout)}
+              disabled={!data.name.trim()}
+            >
+              <Bookmark size={14} />
+              Save current
+            </Button>
+          </div>
+          {savedEvents.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              Save an event to quickly prefill its details later.
+            </p>
+          ) : (
+            <div className="flex max-h-40 flex-col gap-2 overflow-y-auto">
+              {savedEvents.map((ev) => (
+                <div
+                  key={ev.id}
+                  className="flex items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-2"
+                >
+                  <button
+                    type="button"
+                    className="min-w-0 flex-1 text-left"
+                    onClick={() => {
+                      setData({ ...ev.data, distance: ev.data.distance ?? "" });
+                      setLayout(ev.layout);
+                      setAlign(DEFAULT_ALIGN[ev.layout] ?? "middle");
+                    }}
                   >
-                    <button
-                      type="button"
-                      className="min-w-0 flex-1 text-left"
-                      onClick={() => {
-                        setData({ ...ev.data, distance: ev.data.distance ?? "" });
-                        setLayout(ev.layout);
-                        setAlign(DEFAULT_ALIGN[ev.layout] ?? "middle");
-                      }}
-                    >
-                      <p className="truncate text-sm font-medium">{ev.data.name || "Untitled event"}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {[ev.data.date, ev.data.time, ev.data.location, ev.data.distance].filter(Boolean).join(" · ") || "No details"}
-                      </p>
-                    </button>
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 shrink-0"
-                      onClick={() => removeEvent(ev.id)}
-                      aria-label="Delete saved event"
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
+                    <p className="truncate text-sm font-medium">{ev.data.name || "Untitled event"}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {[ev.data.date, ev.data.time, ev.data.location, ev.data.distance].filter(Boolean).join(" · ") || "No details"}
+                    </p>
+                  </button>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 shrink-0"
+                    onClick={() => removeEvent(ev.id)}
+                    aria-label="Delete saved event"
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Settings form */}
+        <div className="space-y-6 rounded-2xl border border-border bg-card p-6">
+          {/* Background media — first thing in the settings */}
+          <div className="space-y-2">
+            <Label>Background photo or video</Label>
+            <input ref={fileRef} type="file" accept="image/*,video/*,.mov,.mp4,.webm,.m4v,video/quicktime" className="hidden" onChange={handleMedia} />
+            <div className="flex gap-2">
+              <Button type="button" variant="secondary" className="flex-1" onClick={() => fileRef.current?.click()}>
+                <ImageUp size={18} />
+                {image || video ? "Replace media" : "Upload photo / video"}
+              </Button>
+              {(image || video) && (
+                <Button type="button" variant="outline" size="icon" onClick={clearMedia} aria-label="Remove media">
+                  <X size={18} />
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              A dark shade is applied so text stays readable. Photos export as PNG; videos can export as a WebM clip.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -458,25 +498,6 @@ function Index() {
               </div>
             </div>
           )}
-
-          <div className="space-y-2">
-            <Label>Background photo or video</Label>
-            <input ref={fileRef} type="file" accept="image/*,video/*,.mov,.mp4,.webm,.m4v,video/quicktime" className="hidden" onChange={handleMedia} />
-            <div className="flex gap-2">
-              <Button type="button" variant="secondary" className="flex-1" onClick={() => fileRef.current?.click()}>
-                <ImageUp size={18} />
-                {image || video ? "Replace media" : "Upload photo / video"}
-              </Button>
-              {(image || video) && (
-                <Button type="button" variant="outline" size="icon" onClick={clearMedia} aria-label="Remove media">
-                  <X size={18} />
-                </Button>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              A dark shade is applied so text stays readable. Photos export as PNG; videos can export as a WebM clip.
-            </p>
-          </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -562,6 +583,7 @@ function Index() {
               ? "Exports a 1080 × 1920 video (MP4 when supported, else WebM) — drop it straight into an Instagram Story."
               : "Exports a high-quality 1080 × 1920 JPEG (2× super-sampled) — Instagram Story spec, ready to post."}
           </p>
+        </div>
         </div>
       </div>
     </main>
