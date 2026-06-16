@@ -333,9 +333,9 @@ function Index() {
 
       <div className="mx-auto grid max-w-6xl items-start gap-12 lg:grid-cols-[1fr_400px]">
         {/* Preview */}
-        <div className="flex flex-col items-center gap-4">
+        <div className="sticky top-0 z-20 -mx-6 flex flex-col items-center gap-3 border-b border-border bg-background/85 px-6 py-4 backdrop-blur lg:static lg:mx-0 lg:gap-4 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0 lg:backdrop-blur-none">
           {/* Format selector — lives right above the output preview */}
-          <div className="w-full max-w-[324px] space-y-2">
+          <div className="hidden w-full max-w-[324px] space-y-2 lg:block">
             <Label>Format</Label>
             <div className="grid grid-cols-2 gap-2">
               {formatOptions.map((opt) => (
@@ -355,8 +355,25 @@ function Index() {
               ))}
             </div>
           </div>
+          {/* Compact format toggle on mobile — keeps the sticky bar short */}
+          <div className="flex w-full items-center justify-center gap-2 lg:hidden">
+            {formatOptions.map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setStoryFormat(opt.id)}
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                  storyFormat === opt.id
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-secondary text-secondary-foreground"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
           <div
-            className="relative overflow-hidden rounded-[2rem] border border-border"
+            className="relative overflow-hidden rounded-2xl border border-border lg:rounded-[2rem]"
             style={{ width: outW * previewScale, height: outH * previewScale, boxShadow: "var(--shadow-glow)" }}
           >
             <div
