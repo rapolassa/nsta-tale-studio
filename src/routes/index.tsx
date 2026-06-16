@@ -331,7 +331,7 @@ function Index() {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-6xl items-start gap-12 lg:grid-cols-[1fr_400px]">
+      <div className="mx-auto grid max-w-6xl items-start gap-5 lg:grid-cols-[1fr_400px] lg:gap-12">
         {/* Preview */}
         <div className="sticky top-0 z-20 -mx-6 flex flex-col items-center gap-3 border-b border-border bg-background/85 px-6 py-4 backdrop-blur lg:static lg:mx-0 lg:gap-4 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0 lg:backdrop-blur-none">
           {/* Format selector — lives right above the output preview */}
