@@ -483,25 +483,6 @@ function Index() {
           )}
 
           <div className="space-y-2">
-            <Label>Background photo or video</Label>
-            <input ref={fileRef} type="file" accept="image/*,video/*,.mov,.mp4,.webm,.m4v,video/quicktime" className="hidden" onChange={handleMedia} />
-            <div className="flex gap-2">
-              <Button type="button" variant="secondary" className="flex-1" onClick={() => fileRef.current?.click()}>
-                <ImageUp size={18} />
-                {image || video ? "Replace media" : "Upload photo / video"}
-              </Button>
-              {(image || video) && (
-                <Button type="button" variant="outline" size="icon" onClick={clearMedia} aria-label="Remove media">
-                  <X size={18} />
-                </Button>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              A dark shade is applied so text stays readable. Photos export as PNG; videos can export as a WebM clip.
-            </p>
-          </div>
-
-          <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Shade intensity</Label>
               <span className="text-xs text-muted-foreground">{shade}%</span>
