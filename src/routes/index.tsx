@@ -390,9 +390,9 @@ function Index() {
         </div>
 
         {/* Right column: saved events box + settings form */}
-        <div className="space-y-6">
+        <div className="space-y-5 md:space-y-6">
         {/* Saved events — kept in its own box, separate from the settings */}
-        <div className="space-y-2 rounded-2xl border border-border bg-card p-6">
+        <div className="space-y-2 rounded-2xl border-border bg-card p-0 md:border md:p-6">
           <div className="flex items-center justify-between">
             <Label>Saved events</Label>
             <Button
