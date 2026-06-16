@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,7 +40,8 @@ function Index() {
   const [align, setAlign] = useState<VAlign>("middle");
   const supportsAlign = LAYOUTS_WITH_ALIGN.includes(layout);
   const { width: outW, height: outH } = FORMAT_DIMENSIONS[storyFormat];
-  const previewScale = 0.3;
+  const isMobile = useIsMobile();
+  const previewScale = isMobile ? 0.16 : 0.3;
   const formatOptions: { id: StoryFormat; label: string; ratio: string }[] = [
     { id: "story", label: "Story / Reel", ratio: "9:16" },
     { id: "post", label: "Post", ratio: "4:5" },
