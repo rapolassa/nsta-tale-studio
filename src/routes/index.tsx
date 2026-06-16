@@ -213,37 +213,55 @@ function Index() {
       const mimeType =
         candidates.find((t) => MediaRecorder.isTypeSupported(t)) ?? "video/webm";
       const stream = canvas.captureStream(30);
-      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 12_000_000 });
+      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
 
-      let raf = 0;
-      const draw = () => {
-        const vw = v.videoWidth || outW;
-        const vh = v.videoHeight || outH;
-        const scale = Math.max(outW / vw, outH / vh);
-        const dw = vw * scale;
-        const dh = vh * scale;
-        // Grayscale only the video frame; the overlay (text + accents) stays
-        // colorful, so we save/restore the canvas filter around the video draw.
-        ctx.save();
-        if (bw) ctx.filter = "grayscale(100%)";
-        ctx.drawImage(v, (outW - dw) / 2, (outH - dh) / 2, dw, dh);
-        ctx.restore();
+      // Precompute the cover-fit geometry once (it never changes per frame).
+      const vw = v.videoWidth || outW;
+      const vh = v.videoHeight || outH;
+      const scale = Math.max(outW / vw, outH / vh);
+      const dw = vw * scale;
+      const dh = vh * scale;
+      const dx = (outW - dw) / 2;
+      const dy = (outH - dh) / 2;
+      // Set the grayscale filter once instead of toggling it every frame.
+      ctx.filter = bw ? "grayscale(100%)" : "none";
+
+      const drawFrame = () => {
+        ctx.drawImage(v, dx, dy, dw, dh);
         ctx.drawImage(overlay, 0, 0, outW, outH);
-        raf = requestAnimationFrame(draw);
+      };
+
+      // Prefer requestVideoFrameCallback so canvas draws stay in lock-step with
+      // the actual decoded video frames — this removes the stutter you get when
+      // a plain rAF loop runs out of sync with the video's real frame rate.
+      const hasRVFC = "requestVideoFrameCallback" in v;
+      let raf = 0;
+      let stopped = false;
+      const pump = () => {
+        if (stopped) return;
+        drawFrame();
+        if (hasRVFC) {
+          // @ts-expect-error - requestVideoFrameCallback is not in all TS libs yet
+          v.requestVideoFrameCallback(pump);
+        } else {
+          raf = requestAnimationFrame(pump);
+        }
       };
 
       // Record one full loop of the video (capped at 15s).
       const duration = Math.min(v.duration && isFinite(v.duration) ? v.duration : 10, 15);
       v.currentTime = 0;
       await v.play();
-      draw();
+      pump();
       recorder.start();
 
       await new Promise((r) => setTimeout(r, duration * 1000));
 
+      stopped = true;
       cancelAnimationFrame(raf);
+      ctx.filter = "none";
       await new Promise<void>((resolve) => {
         recorder.onstop = () => resolve();
         recorder.stop();
