@@ -243,8 +243,7 @@ function Index() {
         if (stopped) return;
         drawFrame();
         if (hasRVFC) {
-          // @ts-expect-error - requestVideoFrameCallback is not in all TS libs yet
-          v.requestVideoFrameCallback(pump);
+          (v as unknown as { requestVideoFrameCallback: (cb: () => void) => void }).requestVideoFrameCallback(pump);
         } else {
           raf = requestAnimationFrame(pump);
         }
