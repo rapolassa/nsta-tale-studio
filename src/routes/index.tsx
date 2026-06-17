@@ -304,7 +304,7 @@ function Index() {
   ];
 
   return (
-    <main className="min-h-screen px-4 py-6 md:px-12 md:py-10">
+    <main className="min-h-screen overflow-x-hidden px-4 py-6 md:px-12 md:py-10">
       <header className="mx-auto mb-6 flex max-w-6xl items-center gap-3 md:mb-10">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <Sparkles size={20} />
