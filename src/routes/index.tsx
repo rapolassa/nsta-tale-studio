@@ -571,7 +571,7 @@ function Index() {
             <Input id="name" maxLength={60} value={data.name} onChange={update("name")} placeholder="Summer Rooftop Party" />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+            <div className="space-y-2 min-w-0">
               <Label htmlFor="date"><CalendarDays size={14} className="mr-1 inline" />Date</Label>
               <Popover open={dateOpen} onOpenChange={setDateOpen}>
                 <PopoverTrigger asChild>
@@ -604,9 +604,9 @@ function Index() {
                 </PopoverContent>
               </Popover>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 min-w-0">
               <Label htmlFor="time"><Clock size={14} className="mr-1 inline" />Time</Label>
-              <Input id="time" type="time" value={data.time} onChange={update("time")} />
+              <Input id="time" type="time" value={data.time} onChange={update("time")} className="w-full min-w-0" />
             </div>
           </div>
           <div className="space-y-2">
