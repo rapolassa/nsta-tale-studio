@@ -390,7 +390,7 @@ function Index() {
         </div>
 
         {/* Right column: saved events box + settings form */}
-        <div className="flex flex-col gap-5 md:gap-6">
+        <div className="flex min-w-0 flex-col gap-5 md:gap-6">
         {/* Saved events — kept in its own box; moves to the bottom on mobile */}
         <div className="order-2 space-y-2 rounded-2xl border-border p-0 lg:order-1 md:border md:bg-card md:p-6">
           <div className="flex items-center justify-between">
