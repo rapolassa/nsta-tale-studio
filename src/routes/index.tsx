@@ -304,7 +304,7 @@ function Index() {
   ];
 
   return (
-    <main className="min-h-screen px-4 py-6 md:px-12 md:py-10">
+    <main className="min-h-screen overflow-x-hidden px-4 py-6 md:px-12 md:py-10">
       <header className="mx-auto mb-6 flex max-w-6xl items-center gap-3 md:mb-10">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <Sparkles size={20} />
@@ -471,22 +471,53 @@ function Index() {
 
           <div className="space-y-2">
             <Label>Layout style</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {layoutOptions.map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => chooseLayout(opt.id)}
-                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                    layout === opt.id
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2">
+              {layoutOptions.map((opt) => {
+                const thumbScale = 72 / outW;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => chooseLayout(opt.id)}
+                    className={`flex shrink-0 snap-start flex-col items-center gap-1.5 rounded-xl border p-1.5 transition-colors ${
+                      layout === opt.id
+                        ? "border-primary bg-primary/10"
+                        : "border-border bg-secondary hover:bg-accent"
+                    }`}
+                  >
+                    <div
+                      className="overflow-hidden rounded-md border border-border/50"
+                      style={{ width: outW * thumbScale, height: outH * thumbScale }}
+                    >
+                      <div
+                        style={{
+                          width: outW,
+                          height: outH,
+                          transform: `scale(${thumbScale})`,
+                          transformOrigin: "top left",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        <StoryCanvas
+                          data={data}
+                          layout={opt.id}
+                          image={image}
+                          video={null}
+                          shade={shade / 100}
+                          align={DEFAULT_ALIGN[opt.id] ?? "middle"}
+                          bw={bw}
+                          format={storyFormat}
+                        />
+                      </div>
+                    </div>
+                    <span className={`text-xs font-medium ${layout === opt.id ? "text-foreground" : "text-muted-foreground"}`}>
+                      {opt.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
+            <p className="text-xs text-muted-foreground">Swipe sideways to browse all styles.</p>
           </div>
 
           {supportsAlign && (
