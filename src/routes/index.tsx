@@ -390,9 +390,9 @@ function Index() {
         </div>
 
         {/* Right column: saved events box + settings form */}
-        <div className="space-y-5 md:space-y-6">
-        {/* Saved events — kept in its own box, separate from the settings */}
-        <div className="space-y-2 rounded-2xl border-border p-0 md:border md:bg-card md:p-6">
+        <div className="flex flex-col gap-5 md:gap-6">
+        {/* Saved events — kept in its own box; moves to the bottom on mobile */}
+        <div className="order-2 space-y-2 rounded-2xl border-border p-0 lg:order-1 md:border md:bg-card md:p-6">
           <div className="flex items-center justify-between">
             <Label>Saved events</Label>
             <Button
@@ -448,7 +448,7 @@ function Index() {
         </div>
 
         {/* Settings form */}
-        <div className="space-y-5 rounded-2xl border-border p-0 md:space-y-6 md:border md:bg-card md:p-6">
+        <div className="order-1 space-y-5 rounded-2xl border-border p-0 lg:order-2 md:space-y-6 md:border md:bg-card md:p-6">
           {/* Background media — first thing in the settings */}
           <div className="space-y-2">
             <Label>Background photo or video</Label>
