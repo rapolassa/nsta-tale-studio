@@ -331,9 +331,9 @@ function Index() {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-6xl items-start gap-5 lg:grid-cols-[1fr_400px] lg:gap-12">
+      <div className="mx-auto grid max-w-6xl min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-12">
         {/* Preview */}
-        <div className="sticky top-0 z-20 -mx-6 flex flex-col items-center gap-3 border-b border-border bg-background/85 px-6 py-4 backdrop-blur lg:static lg:mx-0 lg:gap-4 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0 lg:backdrop-blur-none">
+        <div className="sticky top-0 z-20 -mx-4 flex min-w-0 flex-col items-center gap-3 border-b border-border bg-background/85 px-4 py-4 backdrop-blur lg:static lg:mx-0 lg:gap-4 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0 lg:backdrop-blur-none">
           {/* Format selector — lives right above the output preview */}
           <div className="hidden w-full max-w-[324px] space-y-2 lg:block">
             <Label>Format</Label>
@@ -390,7 +390,7 @@ function Index() {
         </div>
 
         {/* Right column: saved events box + settings form */}
-        <div className="flex flex-col gap-5 md:gap-6">
+        <div className="flex min-w-0 flex-col gap-5 md:gap-6">
         {/* Saved events — kept in its own box; moves to the bottom on mobile */}
         <div className="order-2 space-y-2 rounded-2xl border-border p-0 lg:order-1 md:border md:bg-card md:p-6">
           <div className="flex items-center justify-between">
