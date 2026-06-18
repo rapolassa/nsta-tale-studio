@@ -30,7 +30,15 @@ export type LayoutStyle =
   | "crew"
   | "statement"
   | "splash"
-  | "programme";
+  | "programme"
+  | "kickoff"
+  | "trophy"
+  | "summit"
+  | "keynote"
+  | "carnival"
+  | "glow"
+  | "social"
+  | "huddle";
 
 export type VAlign = "top" | "middle" | "bottom";
 
