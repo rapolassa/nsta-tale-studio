@@ -1011,3 +1011,165 @@ function ProgrammeRow({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+/* Font constants for the new layouts */
+const F_BEBAS = "'Bebas Neue', Impact, sans-serif";
+const F_ARCHIVO = "'Archivo Black', system-ui, sans-serif";
+const F_GROTESK = "'Space Grotesk', system-ui, sans-serif";
+const F_PLAYFAIR = "'Playfair Display', Georgia, serif";
+const F_PACIFICO = "'Pacifico', cursive";
+const F_ANTON = "'Anton', Impact, sans-serif";
+const F_RIGHTEOUS = "'Righteous', system-ui, sans-serif";
+const F_CAVEAT = "'Caveat', cursive";
+
+function PlainRow({ icon, text, font }: { icon: React.ReactNode; text: string; font?: string }) {
+  return (
+    <div className="flex items-center gap-6">
+      <span className="flex h-[88px] w-[88px] shrink-0 items-center justify-center rounded-2xl bg-white/15">
+        {icon}
+      </span>
+      <span className="text-5xl leading-tight" style={{ fontFamily: font }}>{text}</span>
+    </div>
+  );
+}
+
+/* ---------------- KICKOFF (sport) — Bebas Neue, tall condensed -------------- */
+function KickoffLayout({ data }: { data: EventData }) {
+  return (
+    <div className="absolute inset-0 flex flex-col justify-between p-24 text-white" style={{ fontFamily: F_BEBAS }}>
+      <span className="text-4xl tracking-[0.5em] text-accent">MATCH DAY</span>
+      <div className="space-y-8">
+        <h1 className="text-[210px] uppercase leading-[0.82] tracking-tight">{data.name || "Event Name"}</h1>
+        <div className="space-y-3 text-6xl uppercase tracking-wide text-white/95">
+          <p>{formatDate(data.date) || "Pick a date"}</p>
+          <p>{formatTime(data.time) || "Pick a time"} · {data.location || "Add location"}</p>
+          {data.distance && <p className="text-accent">{data.distance}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- TROPHY (sport) — Archivo Black, boxed -------------------- */
+function TrophyLayout({ data }: { data: EventData }) {
+  return (
+    <div className="absolute inset-0 flex flex-col justify-center gap-12 p-20 text-white" style={{ fontFamily: F_ARCHIVO }}>
+      <h1 className="text-[150px] uppercase leading-[0.9]">{data.name || "Event Name"}</h1>
+      <div className="grid grid-cols-2 gap-6">
+        {[
+          ["DATE", formatDate(data.date) || "Pick a date"],
+          ["TIME", formatTime(data.time) || "Pick a time"],
+          ["VENUE", data.location || "Add location"],
+          ...(data.distance ? [["DISTANCE", data.distance]] : []),
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-2xl border-4 border-white/80 p-6">
+            <p className="text-2xl tracking-[0.3em] text-accent">{label}</p>
+            <p className="mt-2 text-4xl uppercase leading-tight">{value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- SUMMIT (corporate) — Space Grotesk, clean --------------- */
+function SummitLayout({ data }: { data: EventData }) {
+  return (
+    <div className="absolute inset-0 flex flex-col justify-between p-24 text-white" style={{ fontFamily: F_GROTESK }}>
+      <span className="text-3xl font-semibold uppercase tracking-[0.4em] text-white/70">Conference</span>
+      <div className="space-y-10">
+        <h1 className="text-[130px] font-bold leading-[0.95] tracking-tight">{data.name || "Event Name"}</h1>
+        <div className="space-y-6">
+          <PlainRow font={F_GROTESK} icon={<CalendarDays size={52} />} text={formatDate(data.date) || "Pick a date"} />
+          <PlainRow font={F_GROTESK} icon={<Clock size={52} />} text={formatTime(data.time) || "Pick a time"} />
+          <PlainRow font={F_GROTESK} icon={<MapPin size={52} />} text={data.location || "Add location"} />
+          {data.distance && <PlainRow font={F_GROTESK} icon={<Route size={52} />} text={data.distance} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- KEYNOTE (corporate) — Playfair Display, elegant -------- */
+function KeynoteLayout({ data }: { data: EventData }) {
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-12 p-24 text-center text-white">
+      <span className="text-3xl uppercase tracking-[0.4em] text-white/70" style={{ fontFamily: F_GROTESK }}>You are invited</span>
+      <h1 className="text-[140px] font-semibold italic leading-[0.95]" style={{ fontFamily: F_PLAYFAIR }}>{data.name || "Event Name"}</h1>
+      <div className="h-px w-1/2 bg-white/40" />
+      <div className="space-y-4 text-5xl" style={{ fontFamily: F_GROTESK }}>
+        <p>{formatDate(data.date) || "Pick a date"}</p>
+        <p>{formatTime(data.time) || "Pick a time"}</p>
+        <p className="text-white/85">{data.location || "Add location"}</p>
+        {data.distance && <p className="text-white/85">{data.distance}</p>}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- CARNIVAL (festivals) — Pacifico + Anton ----------------- */
+function CarnivalLayout({ data }: { data: EventData }) {
+  return (
+    <div className="absolute inset-0 flex flex-col justify-between p-20 text-white">
+      <p className="text-[90px] leading-none text-accent" style={{ fontFamily: F_PACIFICO }}>Let's celebrate</p>
+      <h1 className="text-[200px] uppercase leading-[0.82] tracking-tight" style={{ fontFamily: F_ANTON }}>{data.name || "Event Name"}</h1>
+      <div className="space-y-2 text-5xl" style={{ fontFamily: F_PACIFICO }}>
+        <p>{formatDate(data.date) || "Pick a date"}</p>
+        <p>{formatTime(data.time) || "Pick a time"} · {data.location || "Add location"}</p>
+        {data.distance && <p>{data.distance}</p>}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- GLOW (festivals) — Anton, neon stack ------------------- */
+function GlowLayout({ data }: { data: EventData }) {
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-10 p-16 text-center" style={{ fontFamily: F_ANTON }}>
+      <h1
+        className="text-[180px] uppercase leading-[0.85] tracking-tight text-white"
+        style={{ textShadow: "0 0 28px hsl(320 100% 60%), 0 0 60px hsl(280 100% 55%)" }}
+      >
+        {data.name || "Event Name"}
+      </h1>
+      <div className="space-y-3 text-6xl uppercase tracking-wide text-white" style={{ textShadow: "0 0 18px hsl(190 100% 60%)" }}>
+        <p>{formatDate(data.date) || "Pick a date"}</p>
+        <p>{formatTime(data.time) || "Pick a time"}</p>
+        <p>{data.location || "Add location"}</p>
+        {data.distance && <p>{data.distance}</p>}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- SOCIAL (meetups) — Righteous, rounded ------------------ */
+function SocialLayout({ data }: { data: EventData }) {
+  return (
+    <div className="absolute inset-0 flex flex-col justify-between p-24 text-white" style={{ fontFamily: F_RIGHTEOUS }}>
+      <span className="self-start rounded-full bg-accent px-8 py-3 text-3xl text-white">MEETUP</span>
+      <div className="space-y-8">
+        <h1 className="text-[140px] leading-[0.9] tracking-tight">{data.name || "Event Name"}</h1>
+        <div className="space-y-5 text-5xl text-white/95">
+          <PlainRow font={F_RIGHTEOUS} icon={<CalendarDays size={48} />} text={formatDate(data.date) || "Pick a date"} />
+          <PlainRow font={F_RIGHTEOUS} icon={<Clock size={48} />} text={formatTime(data.time) || "Pick a time"} />
+          <PlainRow font={F_RIGHTEOUS} icon={<MapPin size={48} />} text={data.location || "Add location"} />
+          {data.distance && <PlainRow font={F_RIGHTEOUS} icon={<Route size={48} />} text={data.distance} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- HUDDLE (meetups) — Caveat handwriting ------------------ */
+function HuddleLayout({ data }: { data: EventData }) {
+  return (
+    <div className="absolute inset-0 flex flex-col justify-end gap-10 p-20 text-white">
+      <h1 className="text-[170px] leading-[0.85]" style={{ fontFamily: F_CAVEAT }}>{data.name || "Event Name"}</h1>
+      <div className="space-y-3 text-5xl" style={{ fontFamily: F_GROTESK }}>
+        <p><span className="text-accent" style={{ fontFamily: F_CAVEAT }}>when </span>{formatDate(data.date) || "Pick a date"} · {formatTime(data.time) || "Pick a time"}</p>
+        <p><span className="text-accent" style={{ fontFamily: F_CAVEAT }}>where </span>{data.location || "Add location"}</p>
+        {data.distance && <p><span className="text-accent" style={{ fontFamily: F_CAVEAT }}>distance </span>{data.distance}</p>}
+      </div>
+    </div>
+  );
+}
