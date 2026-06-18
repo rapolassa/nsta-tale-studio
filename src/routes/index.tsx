@@ -280,28 +280,33 @@ function Index() {
     }
   };
 
-  const layoutOptions: { id: LayoutStyle; label: string }[] = [
-    { id: "bold", label: "Bold" },
-    { id: "editorial", label: "Editorial" },
-    { id: "minimal", label: "Minimal" },
-    { id: "ticket", label: "Ticket" },
-    { id: "poster", label: "Poster" },
-    { id: "festival", label: "Festival" },
-    { id: "neon", label: "Neon" },
-    { id: "magazine", label: "Magazine" },
-    { id: "polaroid", label: "Polaroid" },
-    { id: "retro", label: "Retro" },
-    { id: "marquee", label: "Marquee" },
-    { id: "crest", label: "Crest" },
-    { id: "varsity", label: "Varsity" },
-    { id: "stadium", label: "Stadium" },
-    { id: "heritage", label: "Heritage" },
-    { id: "racebib", label: "Race Bib" },
-    { id: "crew", label: "Crew" },
-    { id: "statement", label: "Statement" },
-    { id: "splash", label: "Splash" },
-    { id: "programme", label: "Programme" },
+  const layoutCatalog: { id: LayoutStyle; label: string; category: EventCategory }[] = [
+    // Sport
+    { id: "varsity", label: "Varsity", category: "sport" },
+    { id: "stadium", label: "Stadium", category: "sport" },
+    { id: "racebib", label: "Race Bib", category: "sport" },
+    { id: "crest", label: "Crest", category: "sport" },
+    { id: "marquee", label: "Marquee", category: "sport" },
+    // Corporate
+    { id: "minimal", label: "Minimal", category: "corporate" },
+    { id: "editorial", label: "Editorial", category: "corporate" },
+    { id: "magazine", label: "Magazine", category: "corporate" },
+    { id: "statement", label: "Statement", category: "corporate" },
+    { id: "programme", label: "Programme", category: "corporate" },
+    // Festivals
+    { id: "festival", label: "Festival", category: "festivals" },
+    { id: "neon", label: "Neon", category: "festivals" },
+    { id: "splash", label: "Splash", category: "festivals" },
+    { id: "poster", label: "Poster", category: "festivals" },
+    { id: "retro", label: "Retro", category: "festivals" },
+    // Meetups
+    { id: "bold", label: "Bold", category: "meetups" },
+    { id: "ticket", label: "Ticket", category: "meetups" },
+    { id: "polaroid", label: "Polaroid", category: "meetups" },
+    { id: "crew", label: "Crew", category: "meetups" },
+    { id: "heritage", label: "Heritage", category: "meetups" },
   ];
+  const layoutOptions = layoutCatalog.filter((opt) => opt.category === category);
 
   return (
     <main className="min-h-screen overflow-x-hidden px-4 py-6 md:px-12 md:py-10">
