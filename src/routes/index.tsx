@@ -18,6 +18,14 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+type EventCategory = "sport" | "corporate" | "festivals" | "meetups";
+const CATEGORIES: { id: EventCategory; label: string; emoji: string }[] = [
+  { id: "sport", label: "Sport", emoji: "🏅" },
+  { id: "corporate", label: "Corporate", emoji: "💼" },
+  { id: "festivals", label: "Festivals", emoji: "🎉" },
+  { id: "meetups", label: "Meetups", emoji: "👥" },
+];
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
