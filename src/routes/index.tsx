@@ -302,24 +302,32 @@ function Index() {
     { id: "racebib", label: "Race Bib", category: "sport" },
     { id: "crest", label: "Crest", category: "sport" },
     { id: "marquee", label: "Marquee", category: "sport" },
+    { id: "kickoff", label: "Kickoff", category: "sport" },
+    { id: "trophy", label: "Trophy", category: "sport" },
     // Corporate
     { id: "minimal", label: "Minimal", category: "corporate" },
     { id: "editorial", label: "Editorial", category: "corporate" },
     { id: "magazine", label: "Magazine", category: "corporate" },
     { id: "statement", label: "Statement", category: "corporate" },
     { id: "programme", label: "Programme", category: "corporate" },
+    { id: "summit", label: "Summit", category: "corporate" },
+    { id: "keynote", label: "Keynote", category: "corporate" },
     // Festivals
     { id: "festival", label: "Festival", category: "festivals" },
     { id: "neon", label: "Neon", category: "festivals" },
     { id: "splash", label: "Splash", category: "festivals" },
     { id: "poster", label: "Poster", category: "festivals" },
     { id: "retro", label: "Retro", category: "festivals" },
+    { id: "carnival", label: "Carnival", category: "festivals" },
+    { id: "glow", label: "Glow", category: "festivals" },
     // Meetups
     { id: "bold", label: "Bold", category: "meetups" },
     { id: "ticket", label: "Ticket", category: "meetups" },
     { id: "polaroid", label: "Polaroid", category: "meetups" },
     { id: "crew", label: "Crew", category: "meetups" },
     { id: "heritage", label: "Heritage", category: "meetups" },
+    { id: "social", label: "Social", category: "meetups" },
+    { id: "huddle", label: "Huddle", category: "meetups" },
   ];
   const layoutOptions = layoutCatalog.filter((opt) => opt.category === category);
 
