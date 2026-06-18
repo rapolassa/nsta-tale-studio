@@ -18,6 +18,14 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+type EventCategory = "sport" | "corporate" | "festivals" | "meetups";
+const CATEGORIES: { id: EventCategory; label: string; emoji: string }[] = [
+  { id: "sport", label: "Sport", emoji: "🏅" },
+  { id: "corporate", label: "Corporate", emoji: "💼" },
+  { id: "festivals", label: "Festivals", emoji: "🎉" },
+  { id: "meetups", label: "Meetups", emoji: "👥" },
+];
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -38,6 +46,7 @@ function Index() {
   const [layout, setLayout] = useState<LayoutStyle>("bold");
   const [storyFormat, setStoryFormat] = useState<StoryFormat>("story");
   const [align, setAlign] = useState<VAlign>("middle");
+  const [category, setCategory] = useState<EventCategory>("meetups");
   const supportsAlign = LAYOUTS_WITH_ALIGN.includes(layout);
   const { width: outW, height: outH } = FORMAT_DIMENSIONS[storyFormat];
   const isMobile = useIsMobile();
@@ -50,6 +59,12 @@ function Index() {
   const chooseLayout = (id: LayoutStyle) => {
     setLayout(id);
     setAlign(DEFAULT_ALIGN[id] ?? "middle");
+  };
+
+  const chooseCategory = (id: EventCategory) => {
+    setCategory(id);
+    const first = layoutCatalog.find((opt) => opt.category === id);
+    if (first) chooseLayout(first.id);
   };
   const [image, setImage] = useState<string | null>(null);
   const [video, setVideo] = useState<string | null>(null);
@@ -280,28 +295,33 @@ function Index() {
     }
   };
 
-  const layoutOptions: { id: LayoutStyle; label: string }[] = [
-    { id: "bold", label: "Bold" },
-    { id: "editorial", label: "Editorial" },
-    { id: "minimal", label: "Minimal" },
-    { id: "ticket", label: "Ticket" },
-    { id: "poster", label: "Poster" },
-    { id: "festival", label: "Festival" },
-    { id: "neon", label: "Neon" },
-    { id: "magazine", label: "Magazine" },
-    { id: "polaroid", label: "Polaroid" },
-    { id: "retro", label: "Retro" },
-    { id: "marquee", label: "Marquee" },
-    { id: "crest", label: "Crest" },
-    { id: "varsity", label: "Varsity" },
-    { id: "stadium", label: "Stadium" },
-    { id: "heritage", label: "Heritage" },
-    { id: "racebib", label: "Race Bib" },
-    { id: "crew", label: "Crew" },
-    { id: "statement", label: "Statement" },
-    { id: "splash", label: "Splash" },
-    { id: "programme", label: "Programme" },
+  const layoutCatalog: { id: LayoutStyle; label: string; category: EventCategory }[] = [
+    // Sport
+    { id: "varsity", label: "Varsity", category: "sport" },
+    { id: "stadium", label: "Stadium", category: "sport" },
+    { id: "racebib", label: "Race Bib", category: "sport" },
+    { id: "crest", label: "Crest", category: "sport" },
+    { id: "marquee", label: "Marquee", category: "sport" },
+    // Corporate
+    { id: "minimal", label: "Minimal", category: "corporate" },
+    { id: "editorial", label: "Editorial", category: "corporate" },
+    { id: "magazine", label: "Magazine", category: "corporate" },
+    { id: "statement", label: "Statement", category: "corporate" },
+    { id: "programme", label: "Programme", category: "corporate" },
+    // Festivals
+    { id: "festival", label: "Festival", category: "festivals" },
+    { id: "neon", label: "Neon", category: "festivals" },
+    { id: "splash", label: "Splash", category: "festivals" },
+    { id: "poster", label: "Poster", category: "festivals" },
+    { id: "retro", label: "Retro", category: "festivals" },
+    // Meetups
+    { id: "bold", label: "Bold", category: "meetups" },
+    { id: "ticket", label: "Ticket", category: "meetups" },
+    { id: "polaroid", label: "Polaroid", category: "meetups" },
+    { id: "crew", label: "Crew", category: "meetups" },
+    { id: "heritage", label: "Heritage", category: "meetups" },
   ];
+  const layoutOptions = layoutCatalog.filter((opt) => opt.category === category);
 
   return (
     <main className="min-h-screen overflow-x-hidden px-4 py-6 md:px-12 md:py-10">
@@ -471,6 +491,23 @@ function Index() {
 
           <div className="space-y-2">
             <Label>Layout style</Label>
+            <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-3">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => chooseCategory(cat.id)}
+                  className={`flex shrink-0 snap-start items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                    category === cat.id
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
+                  }`}
+                >
+                  <span aria-hidden>{cat.emoji}</span>
+                  {cat.label}
+                </button>
+              ))}
+            </div>
             <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2">
               {layoutOptions.map((opt) => {
                 const thumbScale = 72 / outW;
