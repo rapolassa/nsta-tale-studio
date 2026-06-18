@@ -190,6 +190,14 @@ export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
         {layout === "statement" && <StatementLayout data={data} />}
         {layout === "splash" && <SplashLayout data={data} />}
         {layout === "programme" && <ProgrammeLayout data={data} />}
+        {layout === "kickoff" && <KickoffLayout data={data} />}
+        {layout === "trophy" && <TrophyLayout data={data} />}
+        {layout === "summit" && <SummitLayout data={data} />}
+        {layout === "keynote" && <KeynoteLayout data={data} />}
+        {layout === "carnival" && <CarnivalLayout data={data} />}
+        {layout === "glow" && <GlowLayout data={data} />}
+        {layout === "social" && <SocialLayout data={data} />}
+        {layout === "huddle" && <HuddleLayout data={data} />}
       </div>
     );
   }
