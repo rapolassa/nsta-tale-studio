@@ -491,6 +491,23 @@ function Index() {
 
           <div className="space-y-2">
             <Label>Layout style</Label>
+            <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-3">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => chooseCategory(cat.id)}
+                  className={`flex shrink-0 snap-start items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                    category === cat.id
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
+                  }`}
+                >
+                  <span aria-hidden>{cat.emoji}</span>
+                  {cat.label}
+                </button>
+              ))}
+            </div>
             <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2">
               {layoutOptions.map((opt) => {
                 const thumbScale = 72 / outW;
