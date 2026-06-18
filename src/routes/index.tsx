@@ -38,6 +38,7 @@ function Index() {
   const [layout, setLayout] = useState<LayoutStyle>("bold");
   const [storyFormat, setStoryFormat] = useState<StoryFormat>("story");
   const [align, setAlign] = useState<VAlign>("middle");
+  const [category, setCategory] = useState<EventCategory>("meetups");
   const supportsAlign = LAYOUTS_WITH_ALIGN.includes(layout);
   const { width: outW, height: outH } = FORMAT_DIMENSIONS[storyFormat];
   const isMobile = useIsMobile();
@@ -50,6 +51,12 @@ function Index() {
   const chooseLayout = (id: LayoutStyle) => {
     setLayout(id);
     setAlign(DEFAULT_ALIGN[id] ?? "middle");
+  };
+
+  const chooseCategory = (id: EventCategory) => {
+    setCategory(id);
+    const first = layoutCatalog.find((opt) => opt.category === id);
+    if (first) chooseLayout(first.id);
   };
   const [image, setImage] = useState<string | null>(null);
   const [video, setVideo] = useState<string | null>(null);
