@@ -100,7 +100,7 @@ function Index() {
     toast.success("Signed out");
   };
 
-  const update = (key: keyof EventData) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const update = (key: keyof EventData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setData((d) => ({ ...d, [key]: e.target.value }));
 
   const [dateOpen, setDateOpen] = useState(false);
