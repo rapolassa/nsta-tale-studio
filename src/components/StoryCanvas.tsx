@@ -218,7 +218,7 @@ function BoldLayout({ data }: { data: EventData }) {
 
       <div className="space-y-12">
         <h1 className="text-[120px] font-extrabold uppercase leading-[0.92] tracking-tight text-white drop-shadow-lg">
-          {data.name || "Event Name"}
+          <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
         </h1>
 
         <div className="space-y-7 text-white/95">
@@ -250,7 +250,7 @@ function EditorialLayout({ data }: { data: EventData }) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-between p-24 text-center text-white">
       <h1 className="mt-10 font-serif text-[140px] font-medium leading-[0.95] tracking-tight drop-shadow-lg">
-        {data.name || "Event Name"}
+        <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
       </h1>
 
       <div className="mb-16 w-full max-w-[820px] space-y-8">
@@ -282,7 +282,7 @@ function MinimalLayout({ data }: { data: EventData }) {
   return (
     <div className="absolute inset-0 flex flex-col justify-between p-24 text-white">
       <h1 className="max-w-[850px] text-[150px] font-extrabold uppercase leading-[0.88] tracking-tighter drop-shadow-lg">
-        {data.name || "Event Name"}
+        <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
       </h1>
 
       <div className="space-y-4">
@@ -314,7 +314,7 @@ function TicketLayout({ data }: { data: EventData }) {
           Admit One
         </span>
         <h1 className="my-12 text-[110px] font-extrabold uppercase leading-[0.9] tracking-tight drop-shadow-lg">
-          {data.name || "Event Name"}
+          <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
         </h1>
         <div className="space-y-7 border-t-2 border-dashed border-white/30 pt-12">
           <LabelRow label="Date" value={formatDate(data.date) || "Pick a date"} />
@@ -335,7 +335,7 @@ function PosterLayout({ data, align = "middle" }: { data: EventData; align?: VAl
         {formatDate(data.date) || "Pick a date"}
       </p>
       <h1 className="text-[170px] font-black uppercase leading-[0.85] tracking-tighter drop-shadow-2xl">
-        {data.name || "Event Name"}
+        <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
       </h1>
       <div className="space-y-3">
         <p className="text-5xl font-semibold">{formatTime(data.time) || "Pick a time"}</p>
@@ -358,7 +358,7 @@ function FestivalLayout({ data, align = "middle" }: { data: EventData; align?: V
     <div className={`absolute inset-0 flex flex-col ${vAlignClass(align)} gap-10 p-24 text-white`}>
       <div className="h-2 w-40 rounded-full bg-accent" />
       <h1 className="text-[130px] font-black uppercase leading-[0.85] tracking-tighter drop-shadow-lg">
-        {data.name || "Event Name"}
+        <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
       </h1>
       <div className="flex flex-wrap items-center gap-x-8 gap-y-4 text-4xl font-bold uppercase tracking-wide">
         <span>{formatDate(data.date) || "Pick a date"}</span>
@@ -409,7 +409,7 @@ function NeonLayout({ data }: { data: EventData }) {
             textShadow: `0 0 25px ${pink}, 0 0 55px ${pink}, 0 0 90px ${pink}, 0 0 4px #ffffff`,
           }}
         >
-          {data.name || "Event Name"}
+          <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
         </h1>
         <div
           className="mt-20 space-y-7 text-5xl font-bold uppercase tracking-wide"
@@ -446,7 +446,7 @@ function MagazineLayout({ data }: { data: EventData }) {
             Presenting
           </p>
           <h1 className="font-serif text-[150px] font-medium leading-[0.92] tracking-tight drop-shadow-lg">
-            {data.name || "Event Name"}
+            <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
           </h1>
         </div>
       </div>
@@ -502,7 +502,7 @@ function PolaroidLayout({ data }: { data: EventData }) {
             You're invited
           </p>
           <h1 className="text-[110px] font-black uppercase leading-[0.88] tracking-tight text-black">
-            {data.name || "Event Name"}
+            <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
           </h1>
           <div className="mt-12 h-1 w-32 bg-black/70" />
           <p className="mt-10 text-4xl font-semibold uppercase tracking-[0.25em] text-black/85">
@@ -556,7 +556,7 @@ function RetroLayout({ data, align = "middle" }: { data: EventData; align?: VAli
           filter: "drop-shadow(0 10px 22px rgba(0,0,0,0.55))",
         }}
       >
-        {data.name || "Event Name"}
+        <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
       </h1>
       <div className="flex items-center gap-8">
         <span className="h-[3px] w-24 rounded-full bg-white/80" />
@@ -608,7 +608,7 @@ function MarqueeLayout({ data }: { data: EventData }) {
 
       <div className="flex flex-1 flex-col items-center justify-center gap-14 px-16 text-center">
         <h1 className="text-[170px] font-black uppercase leading-[0.85] tracking-tighter drop-shadow-2xl">
-          {data.name || "Event Name"}
+          <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
         </h1>
         <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-4xl font-extrabold uppercase tracking-wide">
           <span>{formatDate(data.date) || "TBA"}</span>
@@ -662,7 +662,7 @@ function CrestLayout({ data, align = "middle" }: { data: EventData; align?: VAli
         <span className="text-3xl text-accent">★</span>
       </div>
       <h1 className="font-serif text-[110px] font-bold uppercase leading-[0.92] tracking-tight drop-shadow-lg">
-        {data.name || "Event Name"}
+        <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
       </h1>
       <div className="flex items-center gap-6">
         <span className="h-px w-28 bg-white/70" />
@@ -702,7 +702,7 @@ function VarsityLayout({ data }: { data: EventData }) {
             textShadow: "10px 10px 0 #000000, 14px 14px 0 var(--color-accent)",
           }}
         >
-          {data.name || "Event Name"}
+          <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
         </h1>
         <div
           className="bg-accent px-16 py-5 text-4xl font-black uppercase tracking-[0.35em] text-accent-foreground"
@@ -740,7 +740,7 @@ function StadiumLayout({ data }: { data: EventData }) {
       <div className="space-y-10 text-center">
         <p className="text-3xl font-bold uppercase tracking-[0.5em] text-white/75">Featuring</p>
         <h1 className="text-[170px] font-black uppercase leading-[0.82] tracking-tighter drop-shadow-2xl">
-          {data.name || "Event Name"}
+          <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
         </h1>
       </div>
 
@@ -788,7 +788,7 @@ function HeritageLayout({ data }: { data: EventData }) {
           <span className="h-px w-20 bg-white/70" />
         </div>
         <h1 className="my-14 font-serif text-[120px] font-medium leading-[0.92] tracking-tight">
-          {data.name || "Event Name"}
+          <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
         </h1>
         <Ornament />
         <div className="mt-12 space-y-4 font-serif text-4xl">
@@ -836,7 +836,7 @@ function RaceBibLayout({ data }: { data: EventData }) {
 
         <div className="bg-black px-10 py-6 text-center">
           <p className="truncate text-3xl font-black uppercase tracking-[0.5em] text-white">
-            {data.name || "Race Day"}
+            <span className="whitespace-pre-line">{data.name || "Race Day"}</span>
           </p>
         </div>
 
@@ -900,7 +900,7 @@ function CrewLayout({ data, align = "bottom" }: { data: EventData; align?: VAlig
           {formatTime(data.time) || "Pick a time"}
         </p>
         <h1 className="text-[160px] font-black uppercase leading-[0.9] tracking-tight">
-          {data.name || "Event Name"}
+          <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
         </h1>
         <div className="flex flex-wrap items-baseline gap-x-12 gap-y-3 pt-2 text-3xl font-bold uppercase tracking-wide">
           <span>{data.location || "Add location"}</span>
@@ -919,7 +919,7 @@ function StatementLayout({ data }: { data: EventData }) {
   return (
     <div className="absolute inset-0 p-20 text-white">
       <h1 className="text-[150px] font-black leading-[0.95] tracking-tight">
-        {data.name || "Event Name"}
+        <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
       </h1>
 
       <div className="absolute bottom-20 left-20 space-y-3">
@@ -950,7 +950,7 @@ function SplashLayout({ data }: { data: EventData }) {
 
       <div className="flex flex-col items-end gap-2">
         <h1 className="text-right text-[140px] font-black uppercase leading-[0.88] tracking-tighter">
-          {data.name || "Event Name"}
+          <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
         </h1>
         {data.distance && (
           <p
@@ -988,7 +988,7 @@ function ProgrammeLayout({ data }: { data: EventData }) {
   return (
     <div className="absolute inset-0 flex flex-col p-20 text-white">
       <h1 className="text-center font-serif text-[170px] font-medium leading-[0.88] tracking-tight">
-        {data.name || "Event Name"}
+        <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
       </h1>
 
       <div className="mt-auto space-y-8">
@@ -1039,7 +1039,7 @@ function KickoffLayout({ data }: { data: EventData }) {
     <div className="absolute inset-0 flex flex-col justify-between p-24 text-white" style={{ fontFamily: F_BEBAS }}>
       <span className="text-4xl tracking-[0.5em] text-accent">MATCH DAY</span>
       <div className="space-y-8">
-        <h1 className="text-[210px] uppercase leading-[0.82] tracking-tight">{data.name || "Event Name"}</h1>
+        <h1 className="text-[210px] uppercase leading-[0.82] tracking-tight"><span className="whitespace-pre-line">{data.name || "Event Name"}</span></h1>
         <div className="space-y-3 text-6xl uppercase tracking-wide text-white/95">
           <p>{formatDate(data.date) || "Pick a date"}</p>
           <p>{formatTime(data.time) || "Pick a time"} · {data.location || "Add location"}</p>
@@ -1054,7 +1054,7 @@ function KickoffLayout({ data }: { data: EventData }) {
 function TrophyLayout({ data }: { data: EventData }) {
   return (
     <div className="absolute inset-0 flex flex-col justify-center gap-12 p-20 text-white" style={{ fontFamily: F_ARCHIVO }}>
-      <h1 className="text-[150px] uppercase leading-[0.9]">{data.name || "Event Name"}</h1>
+      <h1 className="text-[150px] uppercase leading-[0.9]"><span className="whitespace-pre-line">{data.name || "Event Name"}</span></h1>
       <div className="grid grid-cols-2 gap-6">
         {[
           ["DATE", formatDate(data.date) || "Pick a date"],
@@ -1078,7 +1078,7 @@ function SummitLayout({ data }: { data: EventData }) {
     <div className="absolute inset-0 flex flex-col justify-between p-24 text-white" style={{ fontFamily: F_GROTESK }}>
       <span className="text-3xl font-semibold uppercase tracking-[0.4em] text-white/70">Conference</span>
       <div className="space-y-10">
-        <h1 className="text-[130px] font-bold leading-[0.95] tracking-tight">{data.name || "Event Name"}</h1>
+        <h1 className="text-[130px] font-bold leading-[0.95] tracking-tight"><span className="whitespace-pre-line">{data.name || "Event Name"}</span></h1>
         <div className="space-y-6">
           <PlainRow font={F_GROTESK} icon={<CalendarDays size={52} />} text={formatDate(data.date) || "Pick a date"} />
           <PlainRow font={F_GROTESK} icon={<Clock size={52} />} text={formatTime(data.time) || "Pick a time"} />
@@ -1095,7 +1095,7 @@ function KeynoteLayout({ data }: { data: EventData }) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-12 p-24 text-center text-white">
       <span className="text-3xl uppercase tracking-[0.4em] text-white/70" style={{ fontFamily: F_GROTESK }}>You are invited</span>
-      <h1 className="text-[140px] font-semibold italic leading-[0.95]" style={{ fontFamily: F_PLAYFAIR }}>{data.name || "Event Name"}</h1>
+      <h1 className="text-[140px] font-semibold italic leading-[0.95]" style={{ fontFamily: F_PLAYFAIR }}><span className="whitespace-pre-line">{data.name || "Event Name"}</span></h1>
       <div className="h-px w-1/2 bg-white/40" />
       <div className="space-y-4 text-5xl" style={{ fontFamily: F_GROTESK }}>
         <p>{formatDate(data.date) || "Pick a date"}</p>
@@ -1112,7 +1112,7 @@ function CarnivalLayout({ data }: { data: EventData }) {
   return (
     <div className="absolute inset-0 flex flex-col justify-between p-20 text-white">
       <p className="text-[90px] leading-none text-accent" style={{ fontFamily: F_PACIFICO }}>Let's celebrate</p>
-      <h1 className="text-[200px] uppercase leading-[0.82] tracking-tight" style={{ fontFamily: F_ANTON }}>{data.name || "Event Name"}</h1>
+      <h1 className="text-[200px] uppercase leading-[0.82] tracking-tight" style={{ fontFamily: F_ANTON }}><span className="whitespace-pre-line">{data.name || "Event Name"}</span></h1>
       <div className="space-y-2 text-5xl" style={{ fontFamily: F_PACIFICO }}>
         <p>{formatDate(data.date) || "Pick a date"}</p>
         <p>{formatTime(data.time) || "Pick a time"} · {data.location || "Add location"}</p>
@@ -1130,7 +1130,7 @@ function GlowLayout({ data }: { data: EventData }) {
         className="text-[180px] uppercase leading-[0.85] tracking-tight text-white"
         style={{ textShadow: "0 0 28px hsl(320 100% 60%), 0 0 60px hsl(280 100% 55%)" }}
       >
-        {data.name || "Event Name"}
+        <span className="whitespace-pre-line">{data.name || "Event Name"}</span>
       </h1>
       <div className="space-y-3 text-6xl uppercase tracking-wide text-white" style={{ textShadow: "0 0 18px hsl(190 100% 60%)" }}>
         <p>{formatDate(data.date) || "Pick a date"}</p>
@@ -1148,7 +1148,7 @@ function SocialLayout({ data }: { data: EventData }) {
     <div className="absolute inset-0 flex flex-col justify-between p-24 text-white" style={{ fontFamily: F_RIGHTEOUS }}>
       <span className="self-start rounded-full bg-accent px-8 py-3 text-3xl text-white">MEETUP</span>
       <div className="space-y-8">
-        <h1 className="text-[140px] leading-[0.9] tracking-tight">{data.name || "Event Name"}</h1>
+        <h1 className="text-[140px] leading-[0.9] tracking-tight"><span className="whitespace-pre-line">{data.name || "Event Name"}</span></h1>
         <div className="space-y-5 text-5xl text-white/95">
           <PlainRow font={F_RIGHTEOUS} icon={<CalendarDays size={48} />} text={formatDate(data.date) || "Pick a date"} />
           <PlainRow font={F_RIGHTEOUS} icon={<Clock size={48} />} text={formatTime(data.time) || "Pick a time"} />
@@ -1164,7 +1164,7 @@ function SocialLayout({ data }: { data: EventData }) {
 function HuddleLayout({ data }: { data: EventData }) {
   return (
     <div className="absolute inset-0 flex flex-col justify-end gap-10 p-20 text-white">
-      <h1 className="text-[170px] leading-[0.85]" style={{ fontFamily: F_CAVEAT }}>{data.name || "Event Name"}</h1>
+      <h1 className="text-[170px] leading-[0.85]" style={{ fontFamily: F_CAVEAT }}><span className="whitespace-pre-line">{data.name || "Event Name"}</span></h1>
       <div className="space-y-3 text-5xl" style={{ fontFamily: F_GROTESK }}>
         <p><span className="text-accent" style={{ fontFamily: F_CAVEAT }}>when </span>{formatDate(data.date) || "Pick a date"} · {formatTime(data.time) || "Pick a time"}</p>
         <p><span className="text-accent" style={{ fontFamily: F_CAVEAT }}>where </span>{data.location || "Add location"}</p>
