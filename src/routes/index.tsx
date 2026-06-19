@@ -614,7 +614,16 @@ function Index() {
 
           <div className="space-y-2">
             <Label htmlFor="name">Event name</Label>
-            <Input id="name" maxLength={60} value={data.name} onChange={update("name")} placeholder="Summer Rooftop Party" />
+            <Textarea
+              id="name"
+              maxLength={60}
+              rows={2}
+              value={data.name}
+              onChange={update("name")}
+              placeholder={"Summer Rooftop\nParty"}
+              className="resize-none"
+            />
+            <p className="text-[0.7rem] text-muted-foreground">Press Enter to split the name onto a new line.</p>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2 min-w-0">
