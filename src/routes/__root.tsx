@@ -78,18 +78,35 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Create custom Instagram story images and videos with event details." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Create custom Instagram story images and videos with event details." },
+      { title: "Storyframe" },
+      {
+        name: "description",
+        content: "Create polished Instagram event stories and posts in seconds.",
+      },
+      { name: "author", content: "Storyframe" },
+      { property: "og:title", content: "Storyframe — Instagram Event Story Maker" },
+      {
+        property: "og:description",
+        content: "Create polished Instagram event stories and posts in seconds.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "Create custom Instagram story images and videos with event details." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/deceb4fc-e394-42ff-a625-9ed139270b6b/id-preview-bca213a2--9e09891f-af4b-46cd-8dba-017f18ef323a.lovable.app-1780388386881.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/deceb4fc-e394-42ff-a625-9ed139270b6b/id-preview-bca213a2--9e09891f-af4b-46cd-8dba-017f18ef323a.lovable.app-1780388386881.png" },
+      { name: "twitter:title", content: "Storyframe — Instagram Event Story Maker" },
+      {
+        name: "twitter:description",
+        content: "Create polished Instagram event stories and posts in seconds.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/deceb4fc-e394-42ff-a625-9ed139270b6b/id-preview-bca213a2--9e09891f-af4b-46cd-8dba-017f18ef323a.lovable.app-1780388386881.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/deceb4fc-e394-42ff-a625-9ed139270b6b/id-preview-bca213a2--9e09891f-af4b-46cd-8dba-017f18ef323a.lovable.app-1780388386881.png",
+      },
     ],
     links: [
       {
