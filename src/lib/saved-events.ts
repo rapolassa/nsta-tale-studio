@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { EventData, LayoutStyle } from "@/components/StoryCanvas";
+import { createSlideId } from "@/lib/media-url";
 
 export type SavedEvent = {
   id: string;
@@ -36,10 +37,7 @@ export function useSavedEvents() {
   };
 
   const save = (data: EventData, layout: LayoutStyle) => {
-    const id =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : String(Date.now());
+    const id = createSlideId();
     persist([{ id, data, layout }, ...events]);
   };
 

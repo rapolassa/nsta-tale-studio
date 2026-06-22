@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { createSlideId, prepareImagePreview, revokeMediaUrl } from "@/lib/media-url";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 type EventCategory = "sport" | "corporate" | "festivals" | "meetups";
@@ -60,7 +61,7 @@ function Index() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [exporting, setExporting] = useState(false);
   const makeSlide = (over: Partial<Slide> = {}): Slide => ({
-    id: crypto.randomUUID(),
+    id: createSlideId(),
     image: null,
     video: null,
     layout: "bold",
@@ -158,18 +159,21 @@ function Index() {
 
     if (vids.length) {
       if (active.video) URL.revokeObjectURL(active.video);
+      revokeMediaUrl(active.image);
       patch({ video: URL.createObjectURL(vids[0]), image: null });
     }
 
-    imgs.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const url = reader.result as string;
+    void (async () => {
+      for (const file of imgs) {
+        const url = await prepareImagePreview(file);
         setSlides((arr) => {
           const emptyIdx = arr.findIndex((s) => !s.image && !s.video);
           if (emptyIdx !== -1) {
             const copy = [...arr];
-            copy[emptyIdx] = { ...copy[emptyIdx], image: url, video: null };
+            const target = copy[emptyIdx];
+            revokeMediaUrl(target.image);
+            if (target.video) URL.revokeObjectURL(target.video);
+            copy[emptyIdx] = { ...target, image: url, video: null };
             return copy;
           }
           const base = arr.find((s) => s.id === active.id) ?? arr[arr.length - 1];
@@ -187,13 +191,13 @@ function Index() {
             }),
           ];
         });
-      };
-      reader.readAsDataURL(file);
-    });
+      }
+    })();
     e.target.value = "";
   };
 
   const clearMedia = () => {
+    revokeMediaUrl(image);
     if (video) URL.revokeObjectURL(video);
     patch({ image: null, video: null });
   };
@@ -216,7 +220,7 @@ function Index() {
     setSlides((arr) => {
       const idx = arr.findIndex((s) => s.id === id);
       if (idx === -1) return arr;
-      const copy = makeSlide({ ...arr[idx], id: crypto.randomUUID(), data: { ...arr[idx].data } });
+      const copy = makeSlide({ ...arr[idx], id: createSlideId(), data: { ...arr[idx].data } });
       const next = [...arr];
       next.splice(idx + 1, 0, copy);
       setActiveId(copy.id);
@@ -228,7 +232,10 @@ function Index() {
     setSlides((arr) => {
       if (arr.length === 1) return arr;
       const target = arr.find((s) => s.id === id);
-      if (target?.video) URL.revokeObjectURL(target.video);
+      if (target) {
+        revokeMediaUrl(target.image);
+        if (target.video) URL.revokeObjectURL(target.video);
+      }
       const next = arr.filter((s) => s.id !== id);
       if (activeId === id) setActiveId(next[0].id);
       return next;
@@ -737,7 +744,6 @@ function Index() {
                         <StoryCanvas
                           data={data}
                           layout={opt.id}
-                          image={image}
                           video={null}
                           shade={shade / 100}
                           align={DEFAULT_ALIGN[opt.id] ?? "middle"}
