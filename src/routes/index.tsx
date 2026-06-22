@@ -668,11 +668,14 @@ function Index() {
           {/* Background media — first thing in the settings */}
           <div className="space-y-2">
             <Label>Background photo or video</Label>
-            <input ref={fileRef} type="file" accept="image/*,video/*,.mov,.mp4,.webm,.m4v,video/quicktime" className="hidden" onChange={handleMedia} />
+            <input ref={fileRef} type="file" multiple accept="image/*,video/*,.mov,.mp4,.webm,.m4v,video/quicktime" className="hidden" onChange={handleMedia} />
             <div className="flex gap-2">
               <Button type="button" variant="secondary" className="flex-1" onClick={() => fileRef.current?.click()}>
                 <ImageUp size={18} />
                 {image || video ? "Replace media" : "Upload photo / video"}
+              </Button>
+              <Button type="button" variant="outline" size="icon" onClick={() => duplicateSlide(active.id)} aria-label="Duplicate image">
+                <Copy size={18} />
               </Button>
               {(image || video) && (
                 <Button type="button" variant="outline" size="icon" onClick={clearMedia} aria-label="Remove media">
@@ -681,7 +684,7 @@ function Index() {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              A dark shade is applied so text stays readable. Photos export as PNG; videos can export as a WebM clip.
+              Pick several photos at once — each one becomes its own output image you can style separately.
             </p>
           </div>
 
