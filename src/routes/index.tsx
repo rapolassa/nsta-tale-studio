@@ -388,6 +388,42 @@ function Index() {
     }
   };
 
+  // Render a slide into the hidden full-size canvas and save it as a JPEG.
+  const exportSlideToFile = async (slide: Slide, index: number) => {
+    setPendingExport(slide);
+    // Wait for the hidden canvas to paint the slide (and decode its image).
+    await new Promise((r) => setTimeout(r, 250));
+    const node = exportRef.current;
+    if (!node) return;
+    const { width, height } = FORMAT_DIMENSIONS[slide.storyFormat];
+    const dataUrl = await toJpeg(node, {
+      width,
+      height,
+      pixelRatio: 2,
+      quality: 0.95,
+      cacheBust: true,
+      backgroundColor: "#000000",
+    });
+    const base = (slide.data.name || "event").replace(/\s+/g, "-").toLowerCase();
+    const link = document.createElement("a");
+    link.download = `${base}-${index + 1}-story.jpg`;
+    link.href = dataUrl;
+    link.click();
+  };
+
+  const handleExportAll = async () => {
+    setExporting(true);
+    try {
+      for (let i = 0; i < slides.length; i++) {
+        await exportSlideToFile(slides[i], i);
+        await new Promise((r) => setTimeout(r, 150));
+      }
+    } finally {
+      setPendingExport(null);
+      setExporting(false);
+    }
+  };
+
   const layoutCatalog: { id: LayoutStyle; label: string; category: EventCategory }[] = [
     // Sport
     { id: "varsity", label: "Varsity", category: "sport" },
