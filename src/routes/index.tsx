@@ -873,6 +873,12 @@ function Index() {
               {exporting ? "Exporting…" : "Export story video"}
             </Button>
           )}
+          {slides.length > 1 && (
+            <Button onClick={handleExportAll} disabled={exporting} className="w-full" size="lg" variant="secondary">
+              <DownloadCloud size={18} />
+              {exporting ? "Exporting…" : `Export all ${slides.length} images`}
+            </Button>
+          )}
           <p className="text-center text-xs text-muted-foreground">
             {video
               ? "Exports a 1080 × 1920 video (MP4 when supported, else WebM) — drop it straight into an Instagram Story."
