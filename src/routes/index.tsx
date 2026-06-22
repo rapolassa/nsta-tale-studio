@@ -4,17 +4,17 @@ import { LandingPage } from "@/components/landing/LandingPage";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Storyframe — Instagram Event Story Maker" },
+      { title: "Storyframe — Turn photos into stories in 60 seconds" },
       {
         name: "description",
         content:
-          "Create polished Instagram event stories and posts in seconds. Pick a layout, add your details, and export ready-to-post images or video.",
+          "Turn your photos into ready-to-post Instagram stories in 60 seconds. Photo & video backgrounds, curated layouts, batch export — no design skills needed.",
       },
-      { property: "og:title", content: "Storyframe — Instagram Event Story Maker" },
+      { property: "og:title", content: "Storyframe — Turn photos into stories in 60 seconds" },
       {
         property: "og:description",
         content:
-          "Create polished Instagram event stories and posts in seconds. Pick a layout, add your details, and export ready-to-post images or video.",
+          "Turn your photos into ready-to-post Instagram stories in 60 seconds. Photo & video backgrounds, curated layouts, batch export — no design skills needed.",
       },
     ],
   }),
