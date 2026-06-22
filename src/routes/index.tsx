@@ -544,6 +544,65 @@ function Index() {
               <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} shade={shade / 100} align={align} bw={bw} format={storyFormat} />
             </div>
           </div>
+
+          {/* Image carousel — each thumbnail is its own output image */}
+          <div className="w-full max-w-[324px] space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>Images ({slides.length})</Label>
+              <button
+                type="button"
+                onClick={addSlide}
+                className="flex items-center gap-1 rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-accent"
+              >
+                <Plus size={13} /> Add
+              </button>
+            </div>
+            <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-2">
+              {slides.map((s, i) => {
+                const dims = FORMAT_DIMENSIONS[s.storyFormat];
+                const tScale = 56 / dims.width;
+                const isActive = s.id === active.id;
+                return (
+                  <div key={s.id} className="relative shrink-0 snap-start">
+                    <button
+                      type="button"
+                      onClick={() => setActiveId(s.id)}
+                      className={`block overflow-hidden rounded-lg border-2 transition-colors ${
+                        isActive ? "border-primary" : "border-border hover:border-accent"
+                      }`}
+                      style={{ width: dims.width * tScale, height: dims.height * tScale }}
+                    >
+                      <div
+                        style={{
+                          width: dims.width,
+                          height: dims.height,
+                          transform: `scale(${tScale})`,
+                          transformOrigin: "top left",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        <StoryCanvas data={s.data} layout={s.layout} image={s.image} video={null} shade={s.shade / 100} align={s.align} bw={s.bw} format={s.storyFormat} />
+                      </div>
+                    </button>
+                    <span className="absolute left-1 top-1 rounded bg-background/80 px-1 text-[0.6rem] font-semibold leading-tight">
+                      {i + 1}
+                    </span>
+                    {slides.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeSlide(s.id)}
+                        aria-label="Remove image"
+                        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow hover:text-foreground"
+                      >
+                        <X size={11} />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground">Select an image to edit its style and details independently.</p>
+          </div>
         </div>
 
         {/* Right column: saved events box + settings form */}
