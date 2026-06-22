@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState, useEffect } from "react";
 import { toPng, toJpeg } from "html-to-image";
 import { format } from "date-fns";
-import { CalendarDays, Clock, MapPin, Route as RouteIcon, Download, Sparkles, ImageUp, X, Bookmark, Trash2, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, LogIn, LogOut } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Route as RouteIcon, Download, Sparkles, ImageUp, X, Bookmark, Trash2, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, LogIn, LogOut, Plus, Copy, DownloadCloud } from "lucide-react";
 import { StoryCanvas, type EventData, type LayoutStyle, type VAlign, type StoryFormat, LAYOUTS_WITH_ALIGN, DEFAULT_ALIGN, FORMAT_DIMENSIONS } from "@/components/StoryCanvas";
 import { useSavedEvents } from "@/lib/saved-events";
 import { supabase } from "@/integrations/supabase/client";
