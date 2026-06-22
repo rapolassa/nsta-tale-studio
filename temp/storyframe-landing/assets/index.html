@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Turn your photos into ready-to-post stories in 60 seconds. Photo & video backgrounds, curated layouts, batch export — no design skills needed." />
+  <title>Storyframe — Turn photos into stories in 60 seconds</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="gradient-orb gradient-orb-1" aria-hidden="true"></div>
+  <div class="gradient-orb gradient-orb-2" aria-hidden="true"></div>
+
+  <header class="header">
+    <nav class="nav container">
+      <a href="#" class="logo">
+        <span class="logo-mark" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="2" y="2" width="16" height="16" rx="4" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M6 14V8l4 3 4-3v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        Storyframe
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#use-cases">Use cases</a></li>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="https://app.storyframe.app/login" class="btn btn-ghost">Log in</a>
+        <a href="#waitlist" class="btn btn-primary">Start free</a>
+      </div>
+      <button class="menu-toggle" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+      </button>
+    </nav>
+    <div class="mobile-nav" aria-hidden="true">
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#use-cases">Use cases</a></li>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="https://app.storyframe.app/login">Log in</a></li>
+        <li><a href="#waitlist" class="btn btn-primary btn-block">Start free</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-content fade-in">
+          <div class="badge">
+            <span class="badge-dot"></span>
+            Now in early access
+          </div>
+          <h1>
+            Turn your photos into
+            <span class="gradient-text">ready-to-post stories</span>
+            in 60 seconds
+          </h1>
+          <p class="hero-sub">
+            Drop in a photo or video, pick a layout style, add your event details — export a polished Story, Reel, or Post. No Canva. No designer. Just done.
+          </p>
+          <form class="hero-form" id="hero-form" novalidate>
+            <div class="form-field">
+              <input type="email" name="email" placeholder="you@venue.com" required aria-label="Email address" autocomplete="email" />
+              <span class="field-error" aria-live="polite"></span>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">Get early access</button>
+          </form>
+          <p class="hero-note">Free to start · 3 exports/month · No credit card</p>
+          <div class="hero-stats">
+            <div class="stat">
+              <strong>60s</strong>
+              <span>Average create time</span>
+            </div>
+            <div class="stat">
+              <strong>10×</strong>
+              <span>Batch from one upload</span>
+            </div>
+            <div class="stat">
+              <strong>9:16</strong>
+              <span>Story, Reel & 4:5 Post</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-preview fade-in fade-in-delay">
+          <div class="preview-glow" aria-hidden="true"></div>
+          <div class="phone-frame">
+            <div class="phone-notch" aria-hidden="true"></div>
+            <div class="phone-screen">
+              <div class="story-bg"></div>
+              <div class="story-shade"></div>
+              <div class="story-overlay story-overlay-bold">
+                <span class="story-tag">YOU'RE INVITED</span>
+                <h2 class="story-title">SUMMER<br />ROOFTOP<br />PARTY</h2>
+                <div class="story-fields">
+                  <div class="story-field"><span class="field-icon" aria-hidden="true">📅</span> Fri, Jul 18 · 8 PM</div>
+                  <div class="story-field"><span class="field-icon" aria-hidden="true">📍</span> Skyline Terrace</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="floating-card card-layouts">
+            <span class="card-label">Layout style</span>
+            <div class="layout-pills">
+              <span class="pill active">Bold</span>
+              <span class="pill">Ticket</span>
+              <span class="pill">Polaroid</span>
+              <span class="pill">Crew</span>
+            </div>
+          </div>
+
+          <div class="floating-card card-batch">
+            <span class="card-label">Batch export</span>
+            <div class="batch-thumbs">
+              <div class="thumb"></div>
+              <div class="thumb"></div>
+              <div class="thumb"></div>
+              <span class="batch-count">+7</span>
+            </div>
+          </div>
+
+          <div class="floating-card card-format">
+            <span class="card-label">Format</span>
+            <div class="format-toggle">
+              <span class="format active">9:16</span>
+              <span class="format">4:5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Social proof -->
+    <section class="social-proof">
+      <div class="container">
+        <p>Built for people who post every week, not once a year</p>
+        <div class="proof-tags">
+          <span>Event venues</span>
+          <span>Promoters</span>
+          <span>Real estate</span>
+          <span>Local businesses</span>
+          <span>Sports clubs</span>
+          <span>Agencies</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+      <div class="container">
+        <div class="section-header reveal">
+          <span class="section-tag">Features</span>
+          <h2>Everything you need.<br />Nothing you don't.</h2>
+          <p>Opinionated layouts that look professional out of the box — so you spend time promoting, not tweaking pixels.</p>
+        </div>
+
+        <div class="features-grid">
+          <article class="feature-card feature-card-large reveal">
+            <div class="feature-icon" aria-hidden="true">⚡</div>
+            <h3>Photo or video backgrounds</h3>
+            <p>Upload a single clip or drop 10 photos at once. Every asset gets the same polished layout — perfect for event recaps and listing tours.</p>
+            <div class="feature-visual batch-visual">
+              <div class="mini-phone"></div>
+              <div class="mini-phone"></div>
+              <div class="mini-phone"></div>
+              <div class="mini-phone"></div>
+            </div>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon" aria-hidden="true">🎨</div>
+            <h3>Curated layout styles</h3>
+            <p>Bold, Ticket, Polaroid, Crew — designed for Sport, Corporate, and Festivals. Switch styles without re-entering details.</p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon" aria-hidden="true">📐</div>
+            <h3>Story, Reel & Post formats</h3>
+            <p>Toggle between 9:16 Story/Reel and 4:5 Post. One design, every platform size you need.</p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon" aria-hidden="true">💾</div>
+            <h3>Saved events & campaigns</h3>
+            <p>Save event details once — name, date, time, location — and prefill your next story in one click.</p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon" aria-hidden="true">🎛️</div>
+            <h3>Visual controls</h3>
+            <p>Shade intensity, black & white toggle, and smart text contrast so your copy always reads on any background.</p>
+          </article>
+
+          <article class="feature-card feature-card-accent reveal">
+            <div class="feature-icon" aria-hidden="true">🏷️</div>
+            <h3>Brand kit <span class="coming-soon">Pro</span></h3>
+            <p>Save your logo, colors, and fonts. Every export stays on-brand — no manual adjustments.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="how-it-works" id="how-it-works">
+      <div class="container">
+        <div class="section-header center reveal">
+          <span class="section-tag">How it works</span>
+          <h2>Three steps. Under a minute.</h2>
+        </div>
+        <ol class="steps">
+          <li class="step reveal">
+            <span class="step-num">01</span>
+            <div class="step-content">
+              <h3>Drop your media</h3>
+              <p>Upload a photo, video, or a whole folder. Storyframe handles the rest.</p>
+            </div>
+          </li>
+          <li class="step reveal">
+            <span class="step-num">02</span>
+            <div class="step-content">
+              <h3>Pick a layout & fill details</h3>
+              <p>Choose Bold, Ticket, Polaroid, or Crew. Add event name, date, time, and location. Adjust shade if needed.</p>
+            </div>
+          </li>
+          <li class="step reveal">
+            <span class="step-num">03</span>
+            <div class="step-content">
+              <h3>Export & post</h3>
+              <p>Download PNG or MP4, sized perfectly for Instagram, TikTok, and Facebook.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Use cases -->
+    <section class="use-cases" id="use-cases">
+      <div class="container">
+        <div class="section-header reveal">
+          <span class="section-tag">Use cases</span>
+          <h2>One tool. Many reasons to post.</h2>
+        </div>
+        <div class="use-case-grid">
+          <article class="use-case reveal">
+            <span class="use-case-emoji" aria-hidden="true">🎉</span>
+            <h3>Events & festivals</h3>
+            <p>Weekly club nights, festivals, private parties — fresh story for every lineup change.</p>
+          </article>
+          <article class="use-case reveal">
+            <span class="use-case-emoji" aria-hidden="true">💼</span>
+            <h3>Business & corporate</h3>
+            <p>Product launches, team updates, and conference promos with a consistent, polished look.</p>
+          </article>
+          <article class="use-case reveal">
+            <span class="use-case-emoji" aria-hidden="true">🏠</span>
+            <h3>Real estate</h3>
+            <p>Turn listing photos into swipe-worthy stories with address, price, and open house details.</p>
+          </article>
+          <article class="use-case reveal">
+            <span class="use-case-emoji" aria-hidden="true">⚽</span>
+            <h3>Sports & fitness</h3>
+            <p>Match day graphics, class schedules, and membership promos at scale.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparison -->
+    <section class="comparison">
+      <div class="container">
+        <div class="comparison-box reveal">
+          <div class="comparison-col">
+            <h3>Canva / CapCut</h3>
+            <ul>
+              <li class="negative">30+ clicks per story</li>
+              <li class="negative">Blank canvas — design decisions everywhere</li>
+              <li class="negative">Batch workflow is manual</li>
+              <li class="negative">Generic templates, easy to spot</li>
+            </ul>
+          </div>
+          <div class="comparison-divider"></div>
+          <div class="comparison-col comparison-highlight">
+            <h3>Storyframe</h3>
+            <ul>
+              <li class="positive">3 clicks, done</li>
+              <li class="positive">Opinionated layouts that always look good</li>
+              <li class="positive">10 photos → 10 stories automatically</li>
+              <li class="positive">Built for recurring weekly content</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing" id="pricing">
+      <div class="container">
+        <div class="section-header center reveal">
+          <span class="section-tag">Pricing</span>
+          <h2>Start free. Upgrade when you're posting weekly.</h2>
+        </div>
+
+        <div class="pricing-grid">
+          <article class="price-card reveal">
+            <h3>Free</h3>
+            <div class="price"><span class="amount">$0</span><span class="period">/mo</span></div>
+            <p class="price-desc">Try it out, post occasionally</p>
+            <ul>
+              <li>3 exports per month</li>
+              <li>All layout styles</li>
+              <li>Story & Post formats</li>
+              <li>Watermark on exports</li>
+            </ul>
+            <a href="#waitlist" class="btn btn-ghost btn-block">Get started</a>
+          </article>
+
+          <article class="price-card price-card-featured reveal">
+            <div class="popular-badge">Most popular</div>
+            <h3>Pro</h3>
+            <div class="price"><span class="amount">$19</span><span class="period">/mo</span></div>
+            <p class="price-desc">For venues & businesses posting weekly</p>
+            <ul>
+              <li>Unlimited exports</li>
+              <li>All categories: Sport, Corporate, Festivals</li>
+              <li>Batch export (10+ at once)</li>
+              <li>Saved events & campaigns</li>
+              <li>No watermark</li>
+              <li>Brand kit</li>
+            </ul>
+            <a href="https://buy.stripe.com/storyframe-pro" class="btn btn-primary btn-block">Start free trial</a>
+          </article>
+
+          <article class="price-card reveal">
+            <h3>Business</h3>
+            <div class="price"><span class="amount">$49</span><span class="period">/mo</span></div>
+            <p class="price-desc">Teams & small agencies</p>
+            <ul>
+              <li>Everything in Pro</li>
+              <li>3 team seats</li>
+              <li>Shared brand presets</li>
+              <li>Priority support</li>
+            </ul>
+            <a href="mailto:hello@storyframe.app" class="btn btn-ghost btn-block">Contact us</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+      <div class="container">
+        <div class="section-header center reveal">
+          <span class="section-tag">FAQ</span>
+          <h2>Common questions</h2>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item reveal" open>
+            <summary>Do I need design experience?</summary>
+            <p>No. Storyframe gives you finished layouts — you just add your photo and text. If you can fill out a form, you can make a story.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Can I use video backgrounds?</summary>
+            <p>Yes. Upload MP4 or MOV clips and overlay your event details on top. Export as video-ready MP4 for Reels and Stories.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary>How does batch export work?</summary>
+            <p>Select multiple photos at once. Storyframe applies your chosen layout and event details to each image and lets you download them all together.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary>What layout styles are available?</summary>
+            <p>Four curated styles — Bold, Ticket, Polaroid, and Crew — each optimized for different vibes. Categories include Sport, Corporate, and Festivals.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Is this only for events?</summary>
+            <p>Events are where we started, but the same workflow works for real estate listings, restaurant promos, gym schedules, and any recurring social content.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Can I cancel anytime?</summary>
+            <p>Yes. Pro and Business plans are month-to-month with no lock-in. Your saved campaigns stay accessible on the free plan.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta" id="waitlist">
+      <div class="container cta-box reveal">
+        <div class="cta-glow" aria-hidden="true"></div>
+        <div class="cta-content">
+          <h2>Your next story is 60 seconds away</h2>
+          <p>Join the waitlist for early access. First 100 users get Pro free for 3 months.</p>
+          <form class="cta-form" id="cta-form" novalidate>
+            <div class="form-field">
+              <input type="email" name="email" placeholder="you@company.com" required aria-label="Email address" autocomplete="email" />
+              <span class="field-error" aria-live="polite"></span>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">Join waitlist</button>
+          </form>
+          <p class="cta-note">No spam. Unsubscribe anytime.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="logo">
+          <span class="logo-mark" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <rect x="2" y="2" width="16" height="16" rx="4" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M6 14V8l4 3 4-3v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          Storyframe
+        </a>
+        <p>Turn photos into stories. Fast.</p>
+        <form class="footer-form" id="footer-form" novalidate>
+          <label for="footer-email" class="footer-form-label">Get updates</label>
+          <div class="footer-form-row">
+            <input type="email" id="footer-email" name="email" placeholder="Email address" required autocomplete="email" />
+            <button type="submit" class="btn btn-primary">Subscribe</button>
+          </div>
+          <span class="field-error" aria-live="polite"></span>
+        </form>
+      </div>
+      <div class="footer-links">
+        <div>
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#faq">FAQ</a>
+          <a href="https://app.storyframe.app">Open app</a>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <a href="#">About</a>
+          <a href="#">Blog</a>
+          <a href="mailto:hello@storyframe.app">Contact</a>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>© 2026 Storyframe. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
