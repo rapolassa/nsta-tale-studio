@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useImperativeHandle } from "react";
+import { forwardRef, useRef, useImperativeHandle, useEffect, useState } from "react";
 import bg from "@/assets/story-bg.jpg";
 import { CalendarDays, Clock, MapPin, Route } from "lucide-react";
 
@@ -129,6 +129,9 @@ export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
     const innerVideoRef = useRef<HTMLVideoElement>(null);
     useImperativeHandle(videoRef, () => innerVideoRef.current as HTMLVideoElement);
     const bgFilter = bw ? "grayscale(100%)" : undefined;
+    const [bgBroken, setBgBroken] = useState(false);
+    useEffect(() => setBgBroken(false), [image]);
+    const bgSrc = image && !bgBroken ? image : bg;
     return (
       <div
         ref={ref}
@@ -150,12 +153,15 @@ export const StoryCanvas = forwardRef<HTMLDivElement, StoryCanvasProps>(
           />
         ) : (
           <img
-            src={image || bg}
+            src={bgSrc}
             alt=""
             width={cw}
             height={ch}
             className="absolute inset-0 h-full w-full object-cover"
             style={{ filter: bgFilter }}
+            onError={() => {
+              if (image) setBgBroken(true);
+            }}
           />
         )}
         {/* Dark shade so text stays legible on any uploaded image.

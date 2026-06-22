@@ -18,7 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { createSlideId, prepareImagePreview, revokeMediaUrl } from "@/lib/media-url";
+import { createSlideId, prepareImagePreview, revokeMediaUrlIfUnused, cloneMediaUrl } from "@/lib/media-url";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 type EventCategory = "sport" | "corporate" | "festivals" | "meetups";
@@ -159,22 +159,36 @@ function Index() {
     const imgs = files.filter((f) => !isVideoFile(f));
 
     if (vids.length) {
-      if (active.video) URL.revokeObjectURL(active.video);
-      revokeMediaUrl(active.image);
-      patch({ video: URL.createObjectURL(vids[0]), image: null });
+      const oldVideo = active.video;
+      const oldImage = active.image;
+      const videoUrl = URL.createObjectURL(vids[0]);
+      setSlides((arr) => {
+        const next = arr.map((s) =>
+          s.id === active.id ? { ...s, video: videoUrl, image: null } : s,
+        );
+        revokeMediaUrlIfUnused(oldVideo, next);
+        revokeMediaUrlIfUnused(oldImage, next);
+        return next;
+      });
     }
 
     void (async () => {
       for (const file of imgs) {
         const url = await prepareImagePreview(file);
+        if (!url) {
+          toast.error("Couldn't load that image. Try JPEG or PNG.");
+          continue;
+        }
         setSlides((arr) => {
           const emptyIdx = arr.findIndex((s) => !s.image && !s.video);
           if (emptyIdx !== -1) {
             const copy = [...arr];
             const target = copy[emptyIdx];
-            revokeMediaUrl(target.image);
-            if (target.video) URL.revokeObjectURL(target.video);
+            const oldImage = target.image;
+            const oldVideo = target.video;
             copy[emptyIdx] = { ...target, image: url, video: null };
+            revokeMediaUrlIfUnused(oldImage, copy);
+            revokeMediaUrlIfUnused(oldVideo, copy);
             return copy;
           }
           const base = arr.find((s) => s.id === active.id) ?? arr[arr.length - 1];
@@ -198,9 +212,14 @@ function Index() {
   };
 
   const clearMedia = () => {
-    revokeMediaUrl(image);
-    if (video) URL.revokeObjectURL(video);
-    patch({ image: null, video: null });
+    const oldImage = image;
+    const oldVideo = video;
+    setSlides((arr) => {
+      const next = arr.map((s) => (s.id === active.id ? { ...s, image: null, video: null } : s));
+      revokeMediaUrlIfUnused(oldImage, next);
+      revokeMediaUrlIfUnused(oldVideo, next);
+      return next;
+    });
   };
 
   const addSlide = () => {
@@ -218,26 +237,40 @@ function Index() {
   };
 
   const duplicateSlide = (id: string) => {
-    setSlides((arr) => {
-      const idx = arr.findIndex((s) => s.id === id);
-      if (idx === -1) return arr;
-      const copy = makeSlide({ ...arr[idx], id: createSlideId(), data: { ...arr[idx].data } });
-      const next = [...arr];
-      next.splice(idx + 1, 0, copy);
+    void (async () => {
+      const source = slides.find((s) => s.id === id);
+      if (!source) return;
+      const [clonedImage, clonedVideo] = await Promise.all([
+        cloneMediaUrl(source.image),
+        cloneMediaUrl(source.video),
+      ]);
+      const copy = makeSlide({
+        ...source,
+        id: createSlideId(),
+        image: clonedImage,
+        video: clonedVideo,
+        data: { ...source.data },
+      });
+      setSlides((arr) => {
+        const idx = arr.findIndex((s) => s.id === id);
+        if (idx === -1) return arr;
+        const next = [...arr];
+        next.splice(idx + 1, 0, copy);
+        return next;
+      });
       setActiveId(copy.id);
-      return next;
-    });
+    })();
   };
 
   const removeSlide = (id: string) => {
     setSlides((arr) => {
       if (arr.length === 1) return arr;
       const target = arr.find((s) => s.id === id);
-      if (target) {
-        revokeMediaUrl(target.image);
-        if (target.video) URL.revokeObjectURL(target.video);
-      }
       const next = arr.filter((s) => s.id !== id);
+      if (target) {
+        revokeMediaUrlIfUnused(target.image, next);
+        revokeMediaUrlIfUnused(target.video, next);
+      }
       if (activeId === id) setActiveId(next[0].id);
       return next;
     });
