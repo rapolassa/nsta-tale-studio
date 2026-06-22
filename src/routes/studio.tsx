@@ -41,7 +41,7 @@ interface Slide {
   data: EventData;
 }
 
-export const Route = createFileRoute("/studio/")({
+export const Route = createFileRoute("/studio")({
   head: () => ({
     meta: [
       { title: "Story Maker Studio — Create Instagram Event Stories" },
