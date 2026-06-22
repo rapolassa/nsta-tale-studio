@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState, useEffect } from "react";
 import { toPng, toJpeg } from "html-to-image";
 import { format } from "date-fns";
-import { CalendarDays, Clock, MapPin, Route as RouteIcon, Download, Sparkles, ImageUp, X, Bookmark, Trash2, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, LogIn, LogOut } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Route as RouteIcon, Download, Sparkles, ImageUp, X, Bookmark, Trash2, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, LogIn, LogOut, Plus, Copy, DownloadCloud } from "lucide-react";
 import { StoryCanvas, type EventData, type LayoutStyle, type VAlign, type StoryFormat, LAYOUTS_WITH_ALIGN, DEFAULT_ALIGN, FORMAT_DIMENSIONS } from "@/components/StoryCanvas";
 import { useSavedEvents } from "@/lib/saved-events";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +27,20 @@ const CATEGORIES: { id: EventCategory; label: string; emoji: string }[] = [
   { id: "meetups", label: "Meetups", emoji: "👥" },
 ];
 
+/** A single output image with its own independent style + content. */
+interface Slide {
+  id: string;
+  image: string | null;
+  video: string | null;
+  layout: LayoutStyle;
+  storyFormat: StoryFormat;
+  align: VAlign;
+  category: EventCategory;
+  shade: number;
+  bw: boolean;
+  data: EventData;
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -41,13 +55,33 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [exporting, setExporting] = useState(false);
-  const [layout, setLayout] = useState<LayoutStyle>("bold");
-  const [storyFormat, setStoryFormat] = useState<StoryFormat>("story");
-  const [align, setAlign] = useState<VAlign>("middle");
-  const [category, setCategory] = useState<EventCategory>("meetups");
+  const makeSlide = (over: Partial<Slide> = {}): Slide => ({
+    id: crypto.randomUUID(),
+    image: null,
+    video: null,
+    layout: "bold",
+    storyFormat: "story",
+    align: "middle",
+    category: "meetups",
+    shade: 45,
+    bw: false,
+    data: { name: "Summer Rooftop Party", date: "", time: "", location: "", distance: "" },
+    ...over,
+  });
+  const [slides, setSlides] = useState<Slide[]>(() => [makeSlide()]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [pendingExport, setPendingExport] = useState<Slide | null>(null);
+  const active = slides.find((s) => s.id === activeId) ?? slides[0];
+  const { image, video, layout, storyFormat, align, category, shade, bw, data } = active;
+
+  const patchSlide = (id: string, partial: Partial<Slide>) =>
+    setSlides((arr) => arr.map((s) => (s.id === id ? { ...s, ...partial } : s)));
+  const patch = (partial: Partial<Slide>) => patchSlide(active.id, partial);
+
   const supportsAlign = LAYOUTS_WITH_ALIGN.includes(layout);
   const { width: outW, height: outH } = FORMAT_DIMENSIONS[storyFormat];
   const isMobile = useIsMobile();
@@ -57,27 +91,25 @@ function Index() {
     { id: "post", label: "Post", ratio: "4:5" },
   ];
 
+  const setStoryFormat = (f: StoryFormat) => patch({ storyFormat: f });
+  const setLayout = (l: LayoutStyle) => patch({ layout: l });
+  const setAlign = (a: VAlign) => patch({ align: a });
+  const setShade = (n: number) => patch({ shade: n });
+  const setBw = (b: boolean) => patch({ bw: b });
+  const setData = (val: EventData | ((d: EventData) => EventData)) =>
+    patch({ data: typeof val === "function" ? (val as (d: EventData) => EventData)(active.data) : val });
+
   const chooseLayout = (id: LayoutStyle) => {
-    setLayout(id);
-    setAlign(DEFAULT_ALIGN[id] ?? "middle");
+    patch({ layout: id, align: DEFAULT_ALIGN[id] ?? "middle" });
   };
 
   const chooseCategory = (id: EventCategory) => {
-    setCategory(id);
     const first = layoutCatalog.find((opt) => opt.category === id);
-    if (first) chooseLayout(first.id);
+    patch({
+      category: id,
+      ...(first ? { layout: first.id, align: DEFAULT_ALIGN[first.id] ?? "middle" } : {}),
+    });
   };
-  const [image, setImage] = useState<string | null>(null);
-  const [video, setVideo] = useState<string | null>(null);
-  const [shade, setShade] = useState(45);
-  const [bw, setBw] = useState(false);
-  const [data, setData] = useState<EventData>({
-    name: "Summer Rooftop Party",
-    date: "",
-    time: "",
-    location: "",
-    distance: "",
-  });
   const { events: savedEvents, save: saveEvent, remove: removeEvent } = useSavedEvents();
 
   const [user, setUser] = useState<{ email?: string } | null>(null);
@@ -113,32 +145,94 @@ function Index() {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
 
+  const isVideoFile = (file: File) =>
+    file.type.startsWith("video") || /\.(mov|mp4|webm|m4v)$/i.test(file.name);
+
+  // Each uploaded image becomes (or fills) its own slide so you can build
+  // several output images in one go. A video applies to the active slide.
   const handleMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const isVideo =
-      file.type.startsWith("video") || /\.(mov|mp4|webm|m4v)$/i.test(file.name);
-    if (isVideo) {
-      // Object URLs play far more reliably than huge data URLs (esp. .mov/.mp4).
-      if (video) URL.revokeObjectURL(video);
-      setVideo(URL.createObjectURL(file));
-      setImage(null);
-    } else {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const vids = files.filter(isVideoFile);
+    const imgs = files.filter((f) => !isVideoFile(f));
+
+    if (vids.length) {
+      if (active.video) URL.revokeObjectURL(active.video);
+      patch({ video: URL.createObjectURL(vids[0]), image: null });
+    }
+
+    imgs.forEach((file) => {
       const reader = new FileReader();
       reader.onload = () => {
-        setImage(reader.result as string);
-        if (video) URL.revokeObjectURL(video);
-        setVideo(null);
+        const url = reader.result as string;
+        setSlides((arr) => {
+          const emptyIdx = arr.findIndex((s) => !s.image && !s.video);
+          if (emptyIdx !== -1) {
+            const copy = [...arr];
+            copy[emptyIdx] = { ...copy[emptyIdx], image: url, video: null };
+            return copy;
+          }
+          const base = arr.find((s) => s.id === active.id) ?? arr[arr.length - 1];
+          return [
+            ...arr,
+            makeSlide({
+              image: url,
+              layout: base.layout,
+              storyFormat: base.storyFormat,
+              align: base.align,
+              category: base.category,
+              shade: base.shade,
+              bw: base.bw,
+              data: { ...base.data },
+            }),
+          ];
+        });
       };
       reader.readAsDataURL(file);
-    }
+    });
     e.target.value = "";
   };
 
   const clearMedia = () => {
     if (video) URL.revokeObjectURL(video);
-    setImage(null);
-    setVideo(null);
+    patch({ image: null, video: null });
+  };
+
+  const addSlide = () => {
+    const s = makeSlide({
+      layout: active.layout,
+      storyFormat: active.storyFormat,
+      align: active.align,
+      category: active.category,
+      shade: active.shade,
+      bw: active.bw,
+      data: { ...active.data },
+    });
+    setSlides((arr) => [...arr, s]);
+    setActiveId(s.id);
+  };
+
+  const duplicateSlide = (id: string) => {
+    setSlides((arr) => {
+      const idx = arr.findIndex((s) => s.id === id);
+      if (idx === -1) return arr;
+      const copy = makeSlide({ ...arr[idx], id: crypto.randomUUID(), data: { ...arr[idx].data } });
+      const next = [...arr];
+      next.splice(idx + 1, 0, copy);
+      setActiveId(copy.id);
+      return next;
+    });
+  };
+
+  const removeSlide = (id: string) => {
+    setSlides((arr) => {
+      if (arr.length === 1) return arr;
+      const target = arr.find((s) => s.id === id);
+      if (target?.video) URL.revokeObjectURL(target.video);
+      const next = arr.filter((s) => s.id !== id);
+      if (activeId === id) setActiveId(next[0].id);
+      return next;
+    });
   };
 
   const handleExport = async () => {
@@ -164,8 +258,7 @@ function Index() {
           ctx.drawImage(v, (outW - dw) / 2, (outH - dh) / 2, dw, dh);
           ctx.filter = "none";
           restore = video;
-          setImage(c.toDataURL("image/jpeg", 0.92));
-          setVideo(null);
+          patch({ image: c.toDataURL("image/jpeg", 0.92), video: null });
           await new Promise((r) => setTimeout(r, 100));
         }
       }
@@ -183,8 +276,7 @@ function Index() {
       link.href = dataUrl;
       link.click();
       if (restore) {
-        setVideo(restore);
-        setImage(null);
+        patch({ video: restore, image: null });
       }
     } finally {
       setExporting(false);
@@ -292,6 +384,42 @@ function Index() {
       link.click();
       setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     } finally {
+      setExporting(false);
+    }
+  };
+
+  // Render a slide into the hidden full-size canvas and save it as a JPEG.
+  const exportSlideToFile = async (slide: Slide, index: number) => {
+    setPendingExport(slide);
+    // Wait for the hidden canvas to paint the slide (and decode its image).
+    await new Promise((r) => setTimeout(r, 250));
+    const node = exportRef.current;
+    if (!node) return;
+    const { width, height } = FORMAT_DIMENSIONS[slide.storyFormat];
+    const dataUrl = await toJpeg(node, {
+      width,
+      height,
+      pixelRatio: 2,
+      quality: 0.95,
+      cacheBust: true,
+      backgroundColor: "#000000",
+    });
+    const base = (slide.data.name || "event").replace(/\s+/g, "-").toLowerCase();
+    const link = document.createElement("a");
+    link.download = `${base}-${index + 1}-story.jpg`;
+    link.href = dataUrl;
+    link.click();
+  };
+
+  const handleExportAll = async () => {
+    setExporting(true);
+    try {
+      for (let i = 0; i < slides.length; i++) {
+        await exportSlideToFile(slides[i], i);
+        await new Promise((r) => setTimeout(r, 150));
+      }
+    } finally {
+      setPendingExport(null);
       setExporting(false);
     }
   };
@@ -416,6 +544,65 @@ function Index() {
               <StoryCanvas ref={canvasRef} data={data} layout={layout} image={image} video={video} videoRef={videoRef} shade={shade / 100} align={align} bw={bw} format={storyFormat} />
             </div>
           </div>
+
+          {/* Image carousel — each thumbnail is its own output image */}
+          <div className="w-full max-w-[324px] space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>Images ({slides.length})</Label>
+              <button
+                type="button"
+                onClick={addSlide}
+                className="flex items-center gap-1 rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-accent"
+              >
+                <Plus size={13} /> Add
+              </button>
+            </div>
+            <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-2">
+              {slides.map((s, i) => {
+                const dims = FORMAT_DIMENSIONS[s.storyFormat];
+                const tScale = 56 / dims.width;
+                const isActive = s.id === active.id;
+                return (
+                  <div key={s.id} className="relative shrink-0 snap-start">
+                    <button
+                      type="button"
+                      onClick={() => setActiveId(s.id)}
+                      className={`block overflow-hidden rounded-lg border-2 transition-colors ${
+                        isActive ? "border-primary" : "border-border hover:border-accent"
+                      }`}
+                      style={{ width: dims.width * tScale, height: dims.height * tScale }}
+                    >
+                      <div
+                        style={{
+                          width: dims.width,
+                          height: dims.height,
+                          transform: `scale(${tScale})`,
+                          transformOrigin: "top left",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        <StoryCanvas data={s.data} layout={s.layout} image={s.image} video={null} shade={s.shade / 100} align={s.align} bw={s.bw} format={s.storyFormat} />
+                      </div>
+                    </button>
+                    <span className="absolute left-1 top-1 rounded bg-background/80 px-1 text-[0.6rem] font-semibold leading-tight">
+                      {i + 1}
+                    </span>
+                    {slides.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeSlide(s.id)}
+                        aria-label="Remove image"
+                        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow hover:text-foreground"
+                      >
+                        <X size={11} />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground">Select an image to edit its style and details independently.</p>
+          </div>
         </div>
 
         {/* Right column: saved events box + settings form */}
@@ -481,11 +668,14 @@ function Index() {
           {/* Background media — first thing in the settings */}
           <div className="space-y-2">
             <Label>Background photo or video</Label>
-            <input ref={fileRef} type="file" accept="image/*,video/*,.mov,.mp4,.webm,.m4v,video/quicktime" className="hidden" onChange={handleMedia} />
+            <input ref={fileRef} type="file" multiple accept="image/*,video/*,.mov,.mp4,.webm,.m4v,video/quicktime" className="hidden" onChange={handleMedia} />
             <div className="flex gap-2">
               <Button type="button" variant="secondary" className="flex-1" onClick={() => fileRef.current?.click()}>
                 <ImageUp size={18} />
                 {image || video ? "Replace media" : "Upload photo / video"}
+              </Button>
+              <Button type="button" variant="outline" size="icon" onClick={() => duplicateSlide(active.id)} aria-label="Duplicate image">
+                <Copy size={18} />
               </Button>
               {(image || video) && (
                 <Button type="button" variant="outline" size="icon" onClick={clearMedia} aria-label="Remove media">
@@ -494,7 +684,7 @@ function Index() {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              A dark shade is applied so text stays readable. Photos export as PNG; videos can export as a WebM clip.
+              Pick several photos at once — each one becomes its own output image you can style separately.
             </p>
           </div>
 
@@ -683,6 +873,12 @@ function Index() {
               {exporting ? "Exporting…" : "Export story video"}
             </Button>
           )}
+          {slides.length > 1 && (
+            <Button onClick={handleExportAll} disabled={exporting} className="w-full" size="lg" variant="secondary">
+              <DownloadCloud size={18} />
+              {exporting ? "Exporting…" : `Export all ${slides.length} images`}
+            </Button>
+          )}
           <p className="text-center text-xs text-muted-foreground">
             {video
               ? "Exports a 1080 × 1920 video (MP4 when supported, else WebM) — drop it straight into an Instagram Story."
@@ -691,6 +887,23 @@ function Index() {
         </div>
         </div>
       </div>
+
+      {/* Hidden full-size canvas used to render each slide during "Export all". */}
+      {pendingExport && (
+        <div style={{ position: "fixed", left: -99999, top: 0, pointerEvents: "none", opacity: 0 }} aria-hidden>
+          <StoryCanvas
+            ref={exportRef}
+            data={pendingExport.data}
+            layout={pendingExport.layout}
+            image={pendingExport.image}
+            video={null}
+            shade={pendingExport.shade / 100}
+            align={pendingExport.align}
+            bw={pendingExport.bw}
+            format={pendingExport.storyFormat}
+          />
+        </div>
+      )}
     </main>
   );
 }
