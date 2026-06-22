@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState, useEffect } from "react";
 import { toPng, toJpeg } from "html-to-image";
+import { storyExportOptions } from "@/lib/story-export";
 import { format } from "date-fns";
 import { CalendarDays, Clock, MapPin, Route as RouteIcon, Download, Sparkles, ImageUp, X, Bookmark, Trash2, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, LogIn, LogOut, Plus, Copy, DownloadCloud } from "lucide-react";
 import { StoryCanvas, type EventData, type LayoutStyle, type VAlign, type StoryFormat, LAYOUTS_WITH_ALIGN, DEFAULT_ALIGN, FORMAT_DIMENSIONS } from "@/components/StoryCanvas";
@@ -270,14 +271,15 @@ function Index() {
         }
       }
       // Rendered at 2x for crisp text/edges, then saved as high-quality JPEG.
-      const dataUrl = await toJpeg(canvasRef.current, {
-        width: outW,
-        height: outH,
-        pixelRatio: 2,
-        quality: 0.95,
-        cacheBust: true,
-        backgroundColor: "#000000",
-      });
+      const dataUrl = await toJpeg(
+        canvasRef.current,
+        storyExportOptions({
+          width: outW,
+          height: outH,
+          pixelRatio: 2,
+          quality: 0.95,
+        }),
+      );
       const link = document.createElement("a");
       link.download = `${(data.name || "event").replace(/\s+/g, "-").toLowerCase()}-story.jpg`;
       link.href = dataUrl;
@@ -285,6 +287,9 @@ function Index() {
       if (restore) {
         patch({ video: restore, image: null });
       }
+    } catch (err) {
+      console.error(err);
+      toast.error("Export failed. Please try again.");
     } finally {
       setExporting(false);
     }
@@ -300,13 +305,15 @@ function Index() {
       // Rasterize the overlay (shade + text) once, excluding the video element.
       // Render at 2x so when it composites onto the 1080x1920 record canvas,
       // text/edges stay crisp after downsampling.
-      const overlayUrl = await toPng(canvasRef.current, {
-        width: outW,
-        height: outH,
-        pixelRatio: 2,
-        cacheBust: true,
-        filter: (node) => node !== v,
-      });
+      const overlayUrl = await toPng(
+        canvasRef.current,
+        storyExportOptions({
+          width: outW,
+          height: outH,
+          pixelRatio: 2,
+          filter: (node) => node !== v,
+        }),
+      );
       const overlay = new Image();
       overlay.src = overlayUrl;
       await overlay.decode();
@@ -403,14 +410,15 @@ function Index() {
     const node = exportRef.current;
     if (!node) return;
     const { width, height } = FORMAT_DIMENSIONS[slide.storyFormat];
-    const dataUrl = await toJpeg(node, {
-      width,
-      height,
-      pixelRatio: 2,
-      quality: 0.95,
-      cacheBust: true,
-      backgroundColor: "#000000",
-    });
+    const dataUrl = await toJpeg(
+      node,
+      storyExportOptions({
+        width,
+        height,
+        pixelRatio: 2,
+        quality: 0.95,
+      }),
+    );
     const base = (slide.data.name || "event").replace(/\s+/g, "-").toLowerCase();
     const link = document.createElement("a");
     link.download = `${base}-${index + 1}-story.jpg`;
