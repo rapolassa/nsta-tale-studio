@@ -258,8 +258,7 @@ function Index() {
           ctx.drawImage(v, (outW - dw) / 2, (outH - dh) / 2, dw, dh);
           ctx.filter = "none";
           restore = video;
-          setImage(c.toDataURL("image/jpeg", 0.92));
-          setVideo(null);
+          patch({ image: c.toDataURL("image/jpeg", 0.92), video: null });
           await new Promise((r) => setTimeout(r, 100));
         }
       }
@@ -277,8 +276,7 @@ function Index() {
       link.href = dataUrl;
       link.click();
       if (restore) {
-        setVideo(restore);
-        setImage(null);
+        patch({ video: restore, image: null });
       }
     } finally {
       setExporting(false);
