@@ -887,6 +887,23 @@ function Index() {
         </div>
         </div>
       </div>
+
+      {/* Hidden full-size canvas used to render each slide during "Export all". */}
+      {pendingExport && (
+        <div style={{ position: "fixed", left: -99999, top: 0, pointerEvents: "none", opacity: 0 }} aria-hidden>
+          <StoryCanvas
+            ref={exportRef}
+            data={pendingExport.data}
+            layout={pendingExport.layout}
+            image={pendingExport.image}
+            video={null}
+            shade={pendingExport.shade / 100}
+            align={pendingExport.align}
+            bw={pendingExport.bw}
+            format={pendingExport.storyFormat}
+          />
+        </div>
+      )}
     </main>
   );
 }
