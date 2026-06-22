@@ -55,13 +55,33 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [exporting, setExporting] = useState(false);
-  const [layout, setLayout] = useState<LayoutStyle>("bold");
-  const [storyFormat, setStoryFormat] = useState<StoryFormat>("story");
-  const [align, setAlign] = useState<VAlign>("middle");
-  const [category, setCategory] = useState<EventCategory>("meetups");
+  const makeSlide = (over: Partial<Slide> = {}): Slide => ({
+    id: crypto.randomUUID(),
+    image: null,
+    video: null,
+    layout: "bold",
+    storyFormat: "story",
+    align: "middle",
+    category: "meetups",
+    shade: 45,
+    bw: false,
+    data: { name: "Summer Rooftop Party", date: "", time: "", location: "", distance: "" },
+    ...over,
+  });
+  const [slides, setSlides] = useState<Slide[]>(() => [makeSlide()]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [pendingExport, setPendingExport] = useState<Slide | null>(null);
+  const active = slides.find((s) => s.id === activeId) ?? slides[0];
+  const { image, video, layout, storyFormat, align, category, shade, bw, data } = active;
+
+  const patchSlide = (id: string, partial: Partial<Slide>) =>
+    setSlides((arr) => arr.map((s) => (s.id === id ? { ...s, ...partial } : s)));
+  const patch = (partial: Partial<Slide>) => patchSlide(active.id, partial);
+
   const supportsAlign = LAYOUTS_WITH_ALIGN.includes(layout);
   const { width: outW, height: outH } = FORMAT_DIMENSIONS[storyFormat];
   const isMobile = useIsMobile();
@@ -71,27 +91,25 @@ function Index() {
     { id: "post", label: "Post", ratio: "4:5" },
   ];
 
+  const setStoryFormat = (f: StoryFormat) => patch({ storyFormat: f });
+  const setLayout = (l: LayoutStyle) => patch({ layout: l });
+  const setAlign = (a: VAlign) => patch({ align: a });
+  const setShade = (n: number) => patch({ shade: n });
+  const setBw = (b: boolean) => patch({ bw: b });
+  const setData = (val: EventData | ((d: EventData) => EventData)) =>
+    patch({ data: typeof val === "function" ? (val as (d: EventData) => EventData)(active.data) : val });
+
   const chooseLayout = (id: LayoutStyle) => {
-    setLayout(id);
-    setAlign(DEFAULT_ALIGN[id] ?? "middle");
+    patch({ layout: id, align: DEFAULT_ALIGN[id] ?? "middle" });
   };
 
   const chooseCategory = (id: EventCategory) => {
-    setCategory(id);
     const first = layoutCatalog.find((opt) => opt.category === id);
-    if (first) chooseLayout(first.id);
+    patch({
+      category: id,
+      ...(first ? { layout: first.id, align: DEFAULT_ALIGN[first.id] ?? "middle" } : {}),
+    });
   };
-  const [image, setImage] = useState<string | null>(null);
-  const [video, setVideo] = useState<string | null>(null);
-  const [shade, setShade] = useState(45);
-  const [bw, setBw] = useState(false);
-  const [data, setData] = useState<EventData>({
-    name: "Summer Rooftop Party",
-    date: "",
-    time: "",
-    location: "",
-    distance: "",
-  });
   const { events: savedEvents, save: saveEvent, remove: removeEvent } = useSavedEvents();
 
   const [user, setUser] = useState<{ email?: string } | null>(null);
@@ -127,32 +145,94 @@ function Index() {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
 
+  const isVideoFile = (file: File) =>
+    file.type.startsWith("video") || /\.(mov|mp4|webm|m4v)$/i.test(file.name);
+
+  // Each uploaded image becomes (or fills) its own slide so you can build
+  // several output images in one go. A video applies to the active slide.
   const handleMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const isVideo =
-      file.type.startsWith("video") || /\.(mov|mp4|webm|m4v)$/i.test(file.name);
-    if (isVideo) {
-      // Object URLs play far more reliably than huge data URLs (esp. .mov/.mp4).
-      if (video) URL.revokeObjectURL(video);
-      setVideo(URL.createObjectURL(file));
-      setImage(null);
-    } else {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const vids = files.filter(isVideoFile);
+    const imgs = files.filter((f) => !isVideoFile(f));
+
+    if (vids.length) {
+      if (active.video) URL.revokeObjectURL(active.video);
+      patch({ video: URL.createObjectURL(vids[0]), image: null });
+    }
+
+    imgs.forEach((file) => {
       const reader = new FileReader();
       reader.onload = () => {
-        setImage(reader.result as string);
-        if (video) URL.revokeObjectURL(video);
-        setVideo(null);
+        const url = reader.result as string;
+        setSlides((arr) => {
+          const emptyIdx = arr.findIndex((s) => !s.image && !s.video);
+          if (emptyIdx !== -1) {
+            const copy = [...arr];
+            copy[emptyIdx] = { ...copy[emptyIdx], image: url, video: null };
+            return copy;
+          }
+          const base = arr.find((s) => s.id === active.id) ?? arr[arr.length - 1];
+          return [
+            ...arr,
+            makeSlide({
+              image: url,
+              layout: base.layout,
+              storyFormat: base.storyFormat,
+              align: base.align,
+              category: base.category,
+              shade: base.shade,
+              bw: base.bw,
+              data: { ...base.data },
+            }),
+          ];
+        });
       };
       reader.readAsDataURL(file);
-    }
+    });
     e.target.value = "";
   };
 
   const clearMedia = () => {
     if (video) URL.revokeObjectURL(video);
-    setImage(null);
-    setVideo(null);
+    patch({ image: null, video: null });
+  };
+
+  const addSlide = () => {
+    const s = makeSlide({
+      layout: active.layout,
+      storyFormat: active.storyFormat,
+      align: active.align,
+      category: active.category,
+      shade: active.shade,
+      bw: active.bw,
+      data: { ...active.data },
+    });
+    setSlides((arr) => [...arr, s]);
+    setActiveId(s.id);
+  };
+
+  const duplicateSlide = (id: string) => {
+    setSlides((arr) => {
+      const idx = arr.findIndex((s) => s.id === id);
+      if (idx === -1) return arr;
+      const copy = makeSlide({ ...arr[idx], id: crypto.randomUUID(), data: { ...arr[idx].data } });
+      const next = [...arr];
+      next.splice(idx + 1, 0, copy);
+      setActiveId(copy.id);
+      return next;
+    });
+  };
+
+  const removeSlide = (id: string) => {
+    setSlides((arr) => {
+      if (arr.length === 1) return arr;
+      const target = arr.find((s) => s.id === id);
+      if (target?.video) URL.revokeObjectURL(target.video);
+      const next = arr.filter((s) => s.id !== id);
+      if (activeId === id) setActiveId(next[0].id);
+      return next;
+    });
   };
 
   const handleExport = async () => {
