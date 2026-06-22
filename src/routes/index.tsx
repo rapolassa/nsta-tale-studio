@@ -27,6 +27,20 @@ const CATEGORIES: { id: EventCategory; label: string; emoji: string }[] = [
   { id: "meetups", label: "Meetups", emoji: "👥" },
 ];
 
+/** A single output image with its own independent style + content. */
+interface Slide {
+  id: string;
+  image: string | null;
+  video: string | null;
+  layout: LayoutStyle;
+  storyFormat: StoryFormat;
+  align: VAlign;
+  category: EventCategory;
+  shade: number;
+  bw: boolean;
+  data: EventData;
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
