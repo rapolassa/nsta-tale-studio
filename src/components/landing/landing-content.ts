@@ -123,7 +123,20 @@ export const comparison = {
   },
 } as const;
 
-export const pricingPlans = [
+type PricingPlan = {
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  features: readonly string[];
+  cta: string;
+  featured: boolean;
+  ghost: boolean;
+  badge?: string;
+  mailto?: boolean;
+};
+
+export const pricingPlans: readonly PricingPlan[] = [
   {
     name: "Free",
     price: "$0",
@@ -168,9 +181,11 @@ export const pricingPlans = [
     ghost: true,
     mailto: true,
   },
-] as const;
+];
 
-export const faqs = [
+type Faq = { q: string; a: string; defaultOpen?: boolean };
+
+export const faqs: readonly Faq[] = [
   {
     q: "Do I need design experience?",
     a: "No. Storyframe gives you finished layouts — you just add your photo and text. If you can fill out a form, you can make a story.",
@@ -196,7 +211,7 @@ export const faqs = [
     q: "Can I cancel anytime?",
     a: "Yes. Pro and Business plans are month-to-month with no lock-in. Your saved campaigns stay accessible on the free plan.",
   },
-] as const;
+];
 
 export const heroStats = [
   { value: "60s", label: "Average create time" },
