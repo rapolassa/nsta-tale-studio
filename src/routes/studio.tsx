@@ -56,7 +56,6 @@ export const Route = createFileRoute("/studio")({
 
 function Index() {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const exportRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [exporting, setExporting] = useState(false);
