@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState, useEffect } from "react";
 import { toPng, toJpeg } from "html-to-image";
 import { format } from "date-fns";
-import { CalendarDays, Clock, MapPin, Route as RouteIcon, Download, Sparkles, ImageUp, X, Bookmark, Trash2, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, LogIn, LogOut, Plus, Copy, DownloadCloud } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Route as RouteIcon, Download, Share2, Sparkles, ImageUp, X, Bookmark, Trash2, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, LogIn, LogOut, Plus, Copy, DownloadCloud } from "lucide-react";
 import { StoryCanvas, type EventData, type LayoutStyle, type VAlign, type StoryFormat, LAYOUTS_WITH_ALIGN, DEFAULT_ALIGN, FORMAT_DIMENSIONS } from "@/components/StoryCanvas";
 import { useSavedEvents } from "@/lib/saved-events";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,14 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  blobToFile,
+  canShareFiles,
+  dataUrlToFile,
+  downloadBlob,
+  shareOrDownloadFile,
+  shareOrDownloadFiles,
+} from "@/lib/share-export";
 
 type EventCategory = "sport" | "corporate" | "festivals" | "meetups";
 const CATEGORIES: { id: EventCategory; label: string; emoji: string }[] = [
@@ -26,6 +34,11 @@ const CATEGORIES: { id: EventCategory; label: string; emoji: string }[] = [
   { id: "festivals", label: "Festivals", emoji: "🎉" },
   { id: "meetups", label: "Meetups", emoji: "👥" },
 ];
+
+function storyFilename(name: string, ext: string, index?: number) {
+  const base = (name || "event").replace(/\s+/g, "-").toLowerCase();
+  return index != null ? `${base}-${index + 1}-story.${ext}` : `${base}-story.${ext}`;
+}
 
 /** A single output image with its own independent style + content. */
 interface Slide {
@@ -85,6 +98,8 @@ function Index() {
   const supportsAlign = LAYOUTS_WITH_ALIGN.includes(layout);
   const { width: outW, height: outH } = FORMAT_DIMENSIONS[storyFormat];
   const isMobile = useIsMobile();
+  const [canShare, setCanShare] = useState(false);
+  const showMobileShare = isMobile && canShare;
   const previewScale = isMobile ? 0.16 : 0.3;
   const formatOptions: { id: StoryFormat; label: string; ratio: string }[] = [
     { id: "story", label: "Story / Reel", ratio: "9:16" },
@@ -113,6 +128,11 @@ function Index() {
   const { events: savedEvents, save: saveEvent, remove: removeEvent } = useSavedEvents();
 
   const [user, setUser] = useState<{ email?: string } | null>(null);
+  useEffect(() => {
+    const probe = new File([new Uint8Array([0xff, 0xd8, 0xff])], "probe.jpg", { type: "image/jpeg" });
+    setCanShare(canShareFiles([probe]));
+  }, []);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -235,7 +255,7 @@ function Index() {
     });
   };
 
-  const handleExport = async () => {
+  const handleExport = async (opts?: { downloadOnly?: boolean }) => {
     if (!canvasRef.current) return;
     setExporting(true);
     try {
@@ -271,13 +291,25 @@ function Index() {
         cacheBust: true,
         backgroundColor: "#000000",
       });
-      const link = document.createElement("a");
-      link.download = `${(data.name || "event").replace(/\s+/g, "-").toLowerCase()}-story.jpg`;
-      link.href = dataUrl;
-      link.click();
+      const filename = storyFilename(data.name, "jpg");
+      const file = dataUrlToFile(dataUrl, filename);
+      if (!opts?.downloadOnly && showMobileShare) {
+        const result = await shareOrDownloadFile(file, {
+          preferShare: true,
+          title: data.name || "Event story",
+        });
+        if (result === "shared") {
+          toast.success("Pick Instagram or Save Image in the share menu");
+        }
+      } else {
+        downloadBlob(file, filename);
+      }
       if (restore) {
         patch({ video: restore, image: null });
       }
+    } catch (err) {
+      console.error(err);
+      toast.error("Export failed. Please try again.");
     } finally {
       setExporting(false);
     }
@@ -285,7 +317,7 @@ function Index() {
 
   // Export a real video story: composite the live video frame with the text
   // overlay onto a canvas and capture it with MediaRecorder.
-  const handleExportVideo = async () => {
+  const handleExportVideo = async (opts?: { downloadOnly?: boolean }) => {
     if (!canvasRef.current || !videoRef.current || !video) return;
     setExporting(true);
     try {
@@ -378,23 +410,34 @@ function Index() {
 
       const blob = new Blob(chunks, { type: mimeType });
       const ext = mimeType.startsWith("video/mp4") ? "mp4" : "webm";
-      const link = document.createElement("a");
-      link.download = `${(data.name || "event").replace(/\s+/g, "-").toLowerCase()}-story.${ext}`;
-      link.href = URL.createObjectURL(blob);
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      const filename = storyFilename(data.name, ext);
+      const file = blobToFile(blob, filename);
+      if (!opts?.downloadOnly && showMobileShare) {
+        const result = await shareOrDownloadFile(file, {
+          preferShare: true,
+          title: data.name || "Event story video",
+        });
+        if (result === "shared") {
+          toast.success("Pick Instagram or Save Video in the share menu");
+        }
+      } else {
+        downloadBlob(file, filename);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Video export failed. Please try again.");
     } finally {
       setExporting(false);
     }
   };
 
   // Render a slide into the hidden full-size canvas and save it as a JPEG.
-  const exportSlideToFile = async (slide: Slide, index: number) => {
+  const exportSlideToFile = async (slide: Slide, index: number): Promise<File> => {
     setPendingExport(slide);
     // Wait for the hidden canvas to paint the slide (and decode its image).
     await new Promise((r) => setTimeout(r, 250));
     const node = exportRef.current;
-    if (!node) return;
+    if (!node) throw new Error("Export canvas not ready");
     const { width, height } = FORMAT_DIMENSIONS[slide.storyFormat];
     const dataUrl = await toJpeg(node, {
       width,
@@ -404,20 +447,34 @@ function Index() {
       cacheBust: true,
       backgroundColor: "#000000",
     });
-    const base = (slide.data.name || "event").replace(/\s+/g, "-").toLowerCase();
-    const link = document.createElement("a");
-    link.download = `${base}-${index + 1}-story.jpg`;
-    link.href = dataUrl;
-    link.click();
+    return dataUrlToFile(dataUrl, storyFilename(slide.data.name, "jpg", index));
   };
 
-  const handleExportAll = async () => {
+  const handleExportAll = async (opts?: { downloadOnly?: boolean }) => {
     setExporting(true);
     try {
+      const files: File[] = [];
       for (let i = 0; i < slides.length; i++) {
-        await exportSlideToFile(slides[i], i);
+        files.push(await exportSlideToFile(slides[i], i));
         await new Promise((r) => setTimeout(r, 150));
       }
+      if (!opts?.downloadOnly && showMobileShare) {
+        const result = await shareOrDownloadFiles(files, {
+          preferShare: true,
+          title: data.name || "Event stories",
+        });
+        if (result === "shared") {
+          toast.success("Pick Instagram or Save Image for each story");
+        }
+      } else {
+        for (const file of files) {
+          downloadBlob(file, file.name);
+          await new Promise((r) => setTimeout(r, 200));
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Export failed. Please try again.");
     } finally {
       setPendingExport(null);
       setExporting(false);
@@ -863,26 +920,98 @@ function Index() {
             <Input id="distance" maxLength={40} value={data.distance} onChange={update("distance")} placeholder="5K · 10 mi · 42.2 km" />
           </div>
 
-          <Button onClick={handleExport} disabled={exporting} className="w-full" size="lg" variant={video ? "outline" : "default"}>
-            <Download size={18} />
-            {exporting ? "Exporting…" : "Export story image"}
-          </Button>
-          {video && (
-            <Button onClick={handleExportVideo} disabled={exporting} className="w-full" size="lg">
+          {showMobileShare ? (
+            <>
+              <Button
+                onClick={() => handleExport()}
+                disabled={exporting}
+                className="w-full"
+                size="lg"
+                variant={video ? "outline" : "default"}
+              >
+                <Share2 size={18} />
+                {exporting ? "Preparing…" : "Share to Instagram / Photos"}
+              </Button>
+              {!video && (
+                <Button
+                  onClick={() => handleExport({ downloadOnly: true })}
+                  disabled={exporting}
+                  className="w-full"
+                  size="lg"
+                  variant="secondary"
+                >
+                  <Download size={18} />
+                  {exporting ? "Exporting…" : "Download image"}
+                </Button>
+              )}
+            </>
+          ) : (
+            <Button onClick={() => handleExport()} disabled={exporting} className="w-full" size="lg" variant={video ? "outline" : "default"}>
               <Download size={18} />
-              {exporting ? "Exporting…" : "Export story video"}
+              {exporting ? "Exporting…" : "Export story image"}
             </Button>
           )}
+          {video && (
+            showMobileShare ? (
+              <>
+                <Button onClick={() => handleExportVideo()} disabled={exporting} className="w-full" size="lg">
+                  <Share2 size={18} />
+                  {exporting ? "Preparing…" : "Share video to Instagram / Photos"}
+                </Button>
+                <Button
+                  onClick={() => handleExportVideo({ downloadOnly: true })}
+                  disabled={exporting}
+                  className="w-full"
+                  size="lg"
+                  variant="secondary"
+                >
+                  <Download size={18} />
+                  {exporting ? "Exporting…" : "Download video"}
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => handleExportVideo()} disabled={exporting} className="w-full" size="lg">
+                <Download size={18} />
+                {exporting ? "Exporting…" : "Export story video"}
+              </Button>
+            )
+          )}
           {slides.length > 1 && (
-            <Button onClick={handleExportAll} disabled={exporting} className="w-full" size="lg" variant="secondary">
-              <DownloadCloud size={18} />
-              {exporting ? "Exporting…" : `Export all ${slides.length} images`}
+            <Button
+              onClick={() => handleExportAll()}
+              disabled={exporting}
+              className="w-full"
+              size="lg"
+              variant={showMobileShare ? "default" : "secondary"}
+            >
+              {showMobileShare ? <Share2 size={18} /> : <DownloadCloud size={18} />}
+              {exporting
+                ? "Preparing…"
+                : showMobileShare
+                  ? `Share all ${slides.length} images`
+                  : `Export all ${slides.length} images`}
+            </Button>
+          )}
+          {showMobileShare && slides.length > 1 && (
+            <Button
+              onClick={() => handleExportAll({ downloadOnly: true })}
+              disabled={exporting}
+              className="w-full"
+              size="lg"
+              variant="secondary"
+            >
+              <Download size={18} />
+              {exporting ? "Exporting…" : `Download all ${slides.length} images`}
             </Button>
           )}
           <p className="text-center text-xs text-muted-foreground">
-            {video
-              ? "Exports a 1080 × 1920 video (MP4 when supported, else WebM) — drop it straight into an Instagram Story."
-              : "Exports a high-quality 1080 × 1920 JPEG (2× super-sampled) — Instagram Story spec, ready to post."}
+            {showMobileShare
+              ? video
+                ? "Opens your share menu — choose Instagram to post, or Save Video to add to Photos."
+                : "Opens your share menu — choose Instagram to post, or Save Image to add to Photos."
+              : video
+                ? "Exports a 1080 × 1920 video (MP4 when supported, else WebM) — drop it straight into an Instagram Story."
+                : "Exports a high-quality 1080 × 1920 JPEG (2× super-sampled) — Instagram Story spec, ready to post."}
           </p>
         </div>
         </div>
