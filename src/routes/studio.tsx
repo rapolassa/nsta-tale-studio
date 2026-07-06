@@ -75,7 +75,6 @@ function Index() {
   });
   const [slides, setSlides] = useState<Slide[]>(() => [makeSlide()]);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [pendingExport, setPendingExport] = useState<Slide | null>(null);
   const active = slides.find((s) => s.id === activeId) ?? slides[0];
   const { image, video, layout, storyFormat, align, category, shade, bw, data } = active;
 
