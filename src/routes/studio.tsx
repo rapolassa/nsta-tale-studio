@@ -837,47 +837,25 @@ function Index() {
             <Input id="distance" maxLength={40} value={data.distance} onChange={update("distance")} placeholder="5K · 10 mi · 42.2 km" />
           </div>
 
-          <Button onClick={handleExport} disabled={exporting} className="w-full" size="lg" variant={video ? "outline" : "default"}>
+          <Button onClick={handleExportCurrent} disabled={exporting} className="w-full" size="lg">
             <Download size={18} />
-            {exporting ? "Exporting…" : "Export story image"}
+            {exporting ? "Exporting…" : video ? "Export current video" : "Export current image"}
           </Button>
-          {video && (
-            <Button onClick={handleExportVideo} disabled={exporting} className="w-full" size="lg">
-              <Download size={18} />
-              {exporting ? "Exporting…" : "Export story video"}
-            </Button>
-          )}
           {slides.length > 1 && (
             <Button onClick={handleExportAll} disabled={exporting} className="w-full" size="lg" variant="secondary">
               <DownloadCloud size={18} />
-              {exporting ? "Exporting…" : `Export all ${slides.length} images`}
+              {exporting ? "Exporting…" : `Export all ${slides.length}`}
             </Button>
           )}
           <p className="text-center text-xs text-muted-foreground">
             {video
               ? "Exports a 1080 × 1920 video (MP4 when supported, else WebM) — drop it straight into an Instagram Story."
               : "Exports a high-quality 1080 × 1920 JPEG (2× super-sampled) — Instagram Story spec, ready to post."}
+            {slides.length > 1 && " “Export all” saves each slide the way it was created — videos as video, images as JPEG."}
           </p>
         </div>
         </div>
       </div>
-
-      {/* Hidden full-size canvas used to render each slide during "Export all". */}
-      {pendingExport && (
-        <div style={{ position: "fixed", left: -99999, top: 0, pointerEvents: "none", opacity: 0 }} aria-hidden>
-          <StoryCanvas
-            ref={exportRef}
-            data={pendingExport.data}
-            layout={pendingExport.layout}
-            image={pendingExport.image}
-            video={null}
-            shade={pendingExport.shade / 100}
-            align={pendingExport.align}
-            bw={pendingExport.bw}
-            format={pendingExport.storyFormat}
-          />
-        </div>
-      )}
     </main>
   );
 }
