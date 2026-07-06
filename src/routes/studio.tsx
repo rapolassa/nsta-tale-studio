@@ -242,61 +242,34 @@ function Index() {
     });
   };
 
-  const handleExport = async () => {
+  // Save the currently rendered (active) canvas as a high-quality JPEG.
+  const exportActiveImage = async (slide: Slide, index?: number) => {
     if (!canvasRef.current) return;
-    setExporting(true);
-    try {
-      // Video frames can't be captured by html-to-image, so snapshot the
-      // current frame to a still image and render that during export.
-      let restore: string | null = null;
-      if (video && videoRef.current) {
-        const v = videoRef.current;
-        const c = document.createElement("canvas");
-        c.width = outW;
-        c.height = outH;
-        const ctx = c.getContext("2d");
-        if (ctx) {
-          const vw = v.videoWidth || outW;
-          const vh = v.videoHeight || outH;
-          const scale = Math.max(outW / vw, outH / vh);
-          const dw = vw * scale;
-          const dh = vh * scale;
-          if (bw) ctx.filter = "grayscale(100%)";
-          ctx.drawImage(v, (outW - dw) / 2, (outH - dh) / 2, dw, dh);
-          ctx.filter = "none";
-          restore = video;
-          patch({ image: c.toDataURL("image/jpeg", 0.92), video: null });
-          await new Promise((r) => setTimeout(r, 100));
-        }
-      }
-      // Rendered at 2x for crisp text/edges, then saved as high-quality JPEG.
-      const dataUrl = await toJpeg(canvasRef.current, {
-        width: outW,
-        height: outH,
-        pixelRatio: 2,
-        quality: 0.95,
-        cacheBust: true,
-        backgroundColor: "#000000",
-      });
-      const link = document.createElement("a");
-      link.download = `${(data.name || "event").replace(/\s+/g, "-").toLowerCase()}-story.jpg`;
-      link.href = dataUrl;
-      link.click();
-      if (restore) {
-        patch({ video: restore, image: null });
-      }
-    } finally {
-      setExporting(false);
-    }
+    const { width, height } = FORMAT_DIMENSIONS[slide.storyFormat];
+    // Rendered at 2x for crisp text/edges, then saved as high-quality JPEG.
+    const dataUrl = await toJpeg(canvasRef.current, {
+      width,
+      height,
+      pixelRatio: 2,
+      quality: 0.95,
+      cacheBust: true,
+      backgroundColor: "#000000",
+    });
+    const base = (slide.data.name || "event").replace(/\s+/g, "-").toLowerCase();
+    const link = document.createElement("a");
+    link.download = index === undefined ? `${base}-story.jpg` : `${base}-${index + 1}-story.jpg`;
+    link.href = dataUrl;
+    link.click();
   };
 
   // Export a real video story: composite the live video frame with the text
   // overlay onto a canvas and capture it with MediaRecorder.
-  const handleExportVideo = async () => {
-    if (!canvasRef.current || !videoRef.current || !video) return;
-    setExporting(true);
-    try {
-      const v = videoRef.current;
+  const exportActiveVideo = async (slide: Slide, index?: number) => {
+    if (!canvasRef.current || !videoRef.current) return;
+    const v = videoRef.current;
+    const { width: outW, height: outH } = FORMAT_DIMENSIONS[slide.storyFormat];
+    const bw = slide.bw;
+    {
       // Rasterize the overlay (shade + text) once, excluding the video element.
       // Render at 2x so when it composites onto the 1080x1920 record canvas,
       // text/edges stay crisp after downsampling.
@@ -385,48 +358,43 @@ function Index() {
 
       const blob = new Blob(chunks, { type: mimeType });
       const ext = mimeType.startsWith("video/mp4") ? "mp4" : "webm";
+      const base = (slide.data.name || "event").replace(/\s+/g, "-").toLowerCase();
       const link = document.createElement("a");
-      link.download = `${(data.name || "event").replace(/\s+/g, "-").toLowerCase()}-story.${ext}`;
+      link.download = index === undefined ? `${base}-story.${ext}` : `${base}-${index + 1}-story.${ext}`;
       link.href = URL.createObjectURL(blob);
       link.click();
       setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }
+  };
+
+  // Export the image currently on screen — as a video if it's a video slide,
+  // otherwise as a JPEG.
+  const handleExportCurrent = async () => {
+    setExporting(true);
+    try {
+      if (active.video) await exportActiveVideo(active);
+      else await exportActiveImage(active);
     } finally {
       setExporting(false);
     }
   };
 
-  // Render a slide into the hidden full-size canvas and save it as a JPEG.
-  const exportSlideToFile = async (slide: Slide, index: number) => {
-    setPendingExport(slide);
-    // Wait for the hidden canvas to paint the slide (and decode its image).
-    await new Promise((r) => setTimeout(r, 250));
-    const node = exportRef.current;
-    if (!node) return;
-    const { width, height } = FORMAT_DIMENSIONS[slide.storyFormat];
-    const dataUrl = await toJpeg(node, {
-      width,
-      height,
-      pixelRatio: 2,
-      quality: 0.95,
-      cacheBust: true,
-      backgroundColor: "#000000",
-    });
-    const base = (slide.data.name || "event").replace(/\s+/g, "-").toLowerCase();
-    const link = document.createElement("a");
-    link.download = `${base}-${index + 1}-story.jpg`;
-    link.href = dataUrl;
-    link.click();
-  };
-
+  // Export every slide the way it was created: video slides become videos,
+  // image slides become JPEGs. We switch each slide into the live canvas so
+  // the video element is available for recording, then capture it.
   const handleExportAll = async () => {
     setExporting(true);
     try {
       for (let i = 0; i < slides.length; i++) {
-        await exportSlideToFile(slides[i], i);
-        await new Promise((r) => setTimeout(r, 150));
+        const s = slides[i];
+        setActiveId(s.id);
+        // Wait for the canvas (and any video element) to render this slide.
+        await new Promise((r) => setTimeout(r, 350));
+        if (s.video) await exportActiveVideo(s, i);
+        else await exportActiveImage(s, i);
+        await new Promise((r) => setTimeout(r, 200));
       }
     } finally {
-      setPendingExport(null);
       setExporting(false);
     }
   };
